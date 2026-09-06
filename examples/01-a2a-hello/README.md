@@ -1,33 +1,57 @@
-# 01. Basic A2A server
+# 01. Basic A2A hello — server and client
 
 **Category:** A2A  
 **Status:** CURRENT
 
 ## Purpose
 
-Minimal SecureAgent A2A server and one business skill.
+Minimal end-to-end SecureAgent A2A example with one server, one client, and one
+business skill. It verifies that the SecureAgent client facade delegates Agent Card
+discovery and message delivery to Agent Nebula Platform and the official A2A Python
+SDK rather than implementing A2A transport in application code.
 
-This example is runnable with the current SecureAgent A2A server adapter.
+The server advertises the `hello` skill. The client resolves the server Agent Card and
+explicitly selects `hello` when sending its message.
 
 ## Public API demonstrated
 
+Server:
+
 ```python
 agent = SecureAgent(config=HERE / "secureagent.conf")
-agent.use_protocol("a2a", role="server", config="a2aserver.conf")
+agent.use_protocol("a2a", role="server", config=HERE / "a2aserver.conf")
 
-@agent.skill("example.invoke")
-def handle(payload):
-    return {"received": dict(payload)}
+@agent.skill("hello")
+async def hello(payload):
+    return {"message": "hello from SecureAgent", "payload": dict(payload)}
 ```
 
-The application imports only `agent_nebula_secureagent`. Protocol execution, security, listener lifecycle, and Agent Nebula integration are delegated through SecureAgent to Platform.
+Client:
+
+```python
+agent = SecureAgent(config=HERE / "secureagent.conf")
+agent.use_protocol("a2a", role="client", config=HERE / "a2aclient.conf")
+
+card = await agent.resolve_agent_card("http://localhost:9001/")
+responses = await agent.send_message_to(
+    "http://localhost:9001/",
+    data={"name": "Agent Nebula"},
+    skill_id="hello",
+)
+```
+
+The application imports only `agent_nebula_secureagent`. Platform owns Agent Card
+resolution, official A2A client construction, request/response wire models, transport,
+security integration, and the Agent Nebula skill-selection extension.
 
 ## Files
 
-- `main.py` — SecureAgent application code.
-- `secureagent.conf` — generic application identity and filesystem roots.
-- `a2aserver.conf` — A2A server configuration.
-- `Makefile` — standard init/run/clean commands.
+- `main.py` — A2A server and `hello` skill.
+- `client.py` — A2A client invocation.
+- `secureagent.conf` — shared application/runtime configuration.
+- `a2aserver.conf` — server and Agent Card configuration.
+- `a2aclient.conf` — client transport configuration.
+- `Makefile` — initialization, server/client execution, and cleanup.
 
 ## Prerequisites
 
@@ -39,23 +63,39 @@ Python 3.12+, uv, and the sibling `agent-nebula-secureagent` repository.
 make init
 ```
 
-Initialization creates only local runtime material needed by this example. Generated private keys and secrets are stored below `secrets/` with restrictive permissions and are ignored by Git. Registry API keys are never invented: set `NEBULA_ONBOARDING_API_KEY` or provision `secrets/onboarding-api-key` yourself.
+This introductory HTTP example does not require certificates, OAuth credentials, or
+Agent Nebula Registry credentials. Initialization prepares the standard local example
+paths used by SecureAgent.
 
 ## Run
 
+Start the server in one terminal:
+
 ```bash
-make run
+make run server
 ```
 
-The configured A2A listener starts on port 9001. Use an official A2A client or a later client example once the SecureAgent client facade is enabled.
+Then invoke it from another terminal:
+
+```bash
+make run client
+```
+
+The server listens on `http://localhost:9001/`. The client first resolves the Agent
+Card and then sends a data message with `skill_id="hello"`.
 
 ## Configuration
 
-`secureagent.conf` contains only generic application settings. Protocol-specific settings remain in `a2aserver.conf`. No Agent Nebula Registry configuration is required.
+`a2aserver.conf` advertises JSON-RPC at `http://localhost:9001/` and the `hello`
+skill. `a2aclient.conf` enables JSON-RPC and JSON output for the matching local client.
+
+No configuration externalization is demonstrated in this example.
 
 ## Security
 
-This example does not add listener TLS. Use the TLS/security examples before deploying outside a controlled local environment.
+This first example intentionally uses local plain HTTP and no application-layer
+credentials. TLS, OAuth, mTLS, Registry discovery, and other security scenarios belong
+to their dedicated examples.
 
 ## Cleanup
 
