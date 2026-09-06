@@ -2,7 +2,7 @@
 ROOT := ../..
 
 init:
-	$(ROOT)/scripts/init-example.sh . tls
+	$(ROOT)/scripts/init-example.sh . tls-runtime
 
 run:
 	@target="$(word 2,$(MAKECMDGOALS))"; \

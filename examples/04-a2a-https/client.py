@@ -60,7 +60,7 @@ async def main() -> None:
     agent.use_protocol("a2a", role="client", config=HERE / "a2aclient.conf")
     try:
         card = await agent.resolve_agent_card(SERVER_URL)
-        interfaces = card.get("supportedInterfaces", [])
+        interfaces = card.get("supported_interfaces", [])
         if not interfaces or not all(
             str(interface.get("url", "")).startswith("https://")
             for interface in interfaces
