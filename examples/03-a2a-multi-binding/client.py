@@ -72,6 +72,7 @@ async def main() -> None:
     discovery.use_protocol("a2a", role="client", config=HERE / "a2aclient-jsonrpc.conf")
     try:
         card = await discovery.resolve_agent_card(SERVER_URL)
+        print(card)
     finally:
         await discovery.close()
 
@@ -81,7 +82,8 @@ async def main() -> None:
         raise AssertionError(f"unexpected advertised skills: {sorted(advertised_skills)}")
 
     advertised_bindings = {
-        interface["protocolBinding"] for interface in card.get("supportedInterfaces", [])
+        interface["protocol_binding"]
+        for interface in card.get("supported_interfaces", [])
     }
     expected_bindings = {item[2] for item in BINDINGS}
     if advertised_bindings != expected_bindings:
