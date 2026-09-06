@@ -12,7 +12,7 @@ This example is runnable with the current SecureAgent A2A server adapter.
 ## Public API demonstrated
 
 ```python
-agent = SecureAgent(nebula_config="nebula.conf")
+agent = SecureAgent(config=HERE / "secureagent.conf", nebula_config=HERE / "nebula.conf")
 agent.use_protocol("a2a", role="server", config="a2aserver.conf")
 
 @agent.skill("example.invoke")
@@ -25,7 +25,7 @@ The application imports only `agent_nebula_secureagent`. Protocol execution, sec
 ## Files
 
 - `main.py` — SecureAgent application code.
-- `application.conf` — generic application identity and filesystem roots.
+- `secureagent.conf` — generic application identity and filesystem roots.
 - `a2aserver.conf` — A2A server configuration.
 - `nebula.conf` — optional Agent Nebula Registry integration.
 - `Makefile` — standard init/run/clean commands.
@@ -52,7 +52,7 @@ The configured A2A listener starts on port 9016. Use an official A2A client or a
 
 ## Configuration
 
-`application.conf` contains only generic application settings. Protocol-specific settings remain in `a2aserver.conf`. Registry settings remain in `nebula.conf`, independent of A2A.
+`secureagent.conf` contains only generic application settings. Protocol-specific settings remain in `a2aserver.conf`. Registry settings remain in `nebula.conf`, independent of A2A.
 
 ## Security
 

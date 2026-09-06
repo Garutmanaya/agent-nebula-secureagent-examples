@@ -1,13 +1,23 @@
 """Basic A2A server."""
+from pathlib import Path
+
 from agent_nebula_secureagent import SecureAgent
 
-agent = SecureAgent()
-agent.use_protocol("a2a", role="server", config="a2aserver.conf")
+HERE = Path(__file__).resolve().parent
 
-@agent.skill("example.invoke")
-def handle(payload):
+agent = SecureAgent(config=HERE / "secureagent.conf")
+agent.use_protocol(
+    "a2a",
+    role="server",
+    config=HERE / "a2aserver.conf",
+)
+
+
+@agent.skill("hello")
+async def hello(payload):
     """Execute the example business capability."""
     return {"message": "hello from SecureAgent", "payload": dict(payload)}
+
 
 if __name__ == "__main__":
     agent.run()

@@ -30,7 +30,7 @@ agent-nebula-sdk
 | 03 | [Custom OAuth scope](examples/03-a2a-custom-scope/README.md) | A2A | CURRENT | Declare an explicit skill scope in the SecureAgent API. |
 | 04 | [Structured input](examples/04-a2a-structured-input/README.md) | A2A | CURRENT | Consume a mapping payload and validate required business fields. |
 | 05 | [Structured result](examples/05-a2a-structured-result/README.md) | A2A | CURRENT | Return structured JSON-compatible data from a skill. |
-| 06 | [Application paths](examples/06-a2a-application-paths/README.md) | Configuration | CURRENT | Separate product and runtime roots with application.conf. |
+| 06 | [Application paths](examples/06-a2a-application-paths/README.md) | Configuration | CURRENT | Separate product and runtime roots with secureagent.conf. |
 | 07 | [Listener configuration](examples/07-a2a-listener/README.md) | Configuration | CURRENT | Configure A2A host and port in a2aserver.conf. |
 | 08 | [TLS A2A server](examples/08-a2a-tls/README.md) | Security | CURRENT | Run the A2A listener with a generated local certificate. |
 | 09 | [Provider metadata](examples/09-a2a-provider-metadata/README.md) | A2A | CURRENT | Publish Agent Card provider organization and URL. |
@@ -81,14 +81,14 @@ Configuration remains top-level and responsibility-oriented. We do not introduce
 
 | File | Owner | Purpose |
 |---|---|---|
-| `application.conf` | Platform | Generic application identity and product/runtime roots. |
+| `secureagent.conf` | Platform | Generic application identity and product/runtime roots. |
 | `a2aserver.conf` | A2A | A2A listener, TLS, complete Agent Card, A2A security declarations. |
 | `a2aclient.conf` | A2A | A2A client/discovery/security configuration once the SecureAgent client adapter is enabled. |
 | `nebula.conf` | Nebula integration | Optional Registry endpoint, TLS and registration lifecycle. |
 | `restserver.conf` | REST | Reserved for the common REST adapter. |
 | `mcpserver.conf` / `mcpclient.conf` | MCP | Reserved for Platform MCP configuration. |
 
-Only files required by an example are present. Protocol configuration does not leak into `application.conf`, and Registry configuration does not become an A2A requirement.
+Only files required by an example are present. Protocol configuration does not leak into `secureagent.conf`, and Registry configuration does not become an A2A requirement.
 
 ## Initialization and secrets
 

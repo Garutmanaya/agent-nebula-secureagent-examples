@@ -5,7 +5,7 @@ log() { printf '[examples] %s\n' "$*"; }
 require_command() { command -v "$1" >/dev/null 2>&1 || { echo "Required command not found: $1" >&2; exit 1; }; }
 prepare_paths() {
   local dir="$1"
-  mkdir -p "$dir/.runtime" "$dir/certs" "$dir/secrets" "$dir/trust"
+  mkdir -p "$dir/.data" "$dir/.runtime" "$dir/certs" "$dir/secrets" "$dir/trust"
   chmod 700 "$dir/secrets"
 }
 generate_local_ca() {

@@ -12,7 +12,7 @@ This is an activation-ready example for a public adapter that is not available y
 ## Public API demonstrated
 
 ```python
-agent = SecureAgent()
+agent = SecureAgent(config=HERE / "secureagent.conf")
 agent.use_protocol("a2a", role="client", config="a2aclient.conf")
 
 @agent.skill("example.invoke")
@@ -25,7 +25,7 @@ The application imports only `agent_nebula_secureagent`. Protocol execution, sec
 ## Files
 
 - `main.py` — SecureAgent application code.
-- `application.conf` — generic application identity and filesystem roots.
+- `secureagent.conf` — generic application identity and filesystem roots.
 - `a2aclient.conf` — A2A client configuration.
 - `Makefile` — standard init/run/clean commands.
 
@@ -51,7 +51,7 @@ For PLANNED examples, `make run` is expected to fail explicitly until the corres
 
 ## Configuration
 
-`application.conf` contains only generic application settings. Protocol-specific settings remain in `a2aclient.conf`. No Agent Nebula Registry configuration is required.
+`secureagent.conf` contains only generic application settings. Protocol-specific settings remain in `a2aclient.conf`. No Agent Nebula Registry configuration is required.
 
 ## Security
 

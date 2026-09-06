@@ -1,6 +1,6 @@
 # Configuration model
 
-The examples preserve the SecureAgent/Platform configuration boundary. `application.conf` is generic. Protocol configuration belongs to the protocol. `nebula.conf` is optional and independent.
+The examples preserve the SecureAgent/Platform configuration boundary. `secureagent.conf` is generic. Protocol configuration belongs to the protocol. `nebula.conf` is optional and independent.
 
 A2A Agent Card data is part of `a2aserver.conf`; no `agent-card.json` is used. This keeps one authoritative A2A server configuration and avoids synchronization between two representations.
 
