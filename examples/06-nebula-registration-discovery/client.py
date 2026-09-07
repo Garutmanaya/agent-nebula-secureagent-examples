@@ -1,0 +1,41 @@
+"""Discover the provider through Agent Nebula Registry and invoke every skill."""
+import asyncio
+from pathlib import Path
+from agent_nebula_secureagent import SecureAgent
+HERE=Path(__file__).resolve().parent
+
+SKILL_CASES = (
+    ("hello", {"name": "Agent Nebula"}, "hello from SecureAgent"),
+    ("echo", {"value": "registry"}, "echo=registry"),
+    ("add", {"a": 7, "b": 5}, "sum=12"),
+)
+
+def response_text(responses):
+    if len(responses) != 1:
+        raise AssertionError(f"expected one response, got {len(responses)}")
+    message = responses[0].get("message")
+    if not isinstance(message, dict):
+        raise AssertionError(f"missing A2A message: {responses[0]}")
+    parts = message.get("parts")
+    if not isinstance(parts, list) or not parts or not isinstance(parts[0], dict):
+        raise AssertionError(f"missing A2A message parts: {message}")
+    text = parts[0].get("text")
+    if not isinstance(text, str):
+        raise AssertionError(f"missing text response: {parts[0]}")
+    return text
+
+async def main():
+    agent=SecureAgent(config=HERE/"secureagent.conf",nebula_config=HERE/"nebula.conf")
+    agent.use_protocol("a2a",role="client",config=HERE/"a2aclient.conf")
+    try:
+        found=await agent.discover(capability="hello")
+        if not found: raise AssertionError("Agent Nebula Registry returned no provider for capability 'hello'")
+        provider=next((item for item in found if item.display_name == "Registry Discovery Agent"), found[0])
+        print(f"PASS  Registry discovery: {provider.display_name}")
+        for skill_id,data,expected in SKILL_CASES:
+            actual=response_text(await agent.send_message(provider,data=data,skill_id=skill_id))
+            if actual != expected: raise AssertionError(f"{skill_id}: {actual!r} != {expected!r}")
+            print(f"PASS  discovered provider {skill_id}")
+        print("RESULT: registration, discovery, and all skill invocations passed")
+    finally: await agent.close()
+if __name__=="__main__": asyncio.run(main())
