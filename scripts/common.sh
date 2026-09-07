@@ -1,118 +1,278 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Shared filesystem names. Keep the physical example layout in one place so
+# initialization modes do not duplicate directory or filename conventions.
+readonly EXAMPLE_RUNTIME_DIR_NAME=".runtime"
+readonly EXAMPLE_DATA_DIR_NAME=".data"
+readonly CERTS_DIR_NAME="certs"
+readonly SECRETS_DIR_NAME="secrets"
+readonly TRUST_DIR_NAME="trust"
+readonly SERVER_KEY_FILENAME="server.key"
+readonly SERVER_CERTIFICATE_FILENAME="server.crt"
+readonly SERVER_CSR_FILENAME="server.csr"
+readonly LOCAL_CA_KEY_FILENAME="local-ca.key"
+readonly LOCAL_CA_CERTIFICATE_FILENAME="local-ca.crt"
+readonly NEBULA_TRUST_BUNDLE_FILENAME="agent-nebula-ca.crt"
+readonly ONBOARDING_API_KEY_FILENAME="onboarding-api-key"
+readonly OAUTH_CLIENT_KEY_FILENAME="oauth-client.key"
+readonly DEFAULT_CERTIFICATE_ORGANIZATION="Agent Nebula Examples"
+readonly DEFAULT_CERTIFICATE_VALIDITY_DAYS="30"
+readonly DEFAULT_RSA_KEY_BITS="3072"
+
 log() { printf '[examples] %s\n' "$*"; }
-require_command() { command -v "$1" >/dev/null 2>&1 || { echo "Required command not found: $1" >&2; exit 1; }; }
+
+require_command() {
+  command -v "$1" >/dev/null 2>&1 || {
+    echo "Required command not found: $1" >&2
+    exit 1
+  }
+}
+
+# Resolve the standard paths for one example. Callers use these variables
+# instead of rebuilding .runtime/certs/secrets/trust paths themselves.
+resolve_example_paths() {
+  local dir="$1"
+
+  EXAMPLE_DIR="$dir"
+  DATA_DIR="$dir/$EXAMPLE_DATA_DIR_NAME"
+  RUNTIME_DIR="$dir/$EXAMPLE_RUNTIME_DIR_NAME"
+  CERTS_DIR="$dir/$CERTS_DIR_NAME"
+  SECRETS_DIR="$dir/$SECRETS_DIR_NAME"
+  TRUST_DIR="$dir/$TRUST_DIR_NAME"
+  RUNTIME_CERTS_DIR="$RUNTIME_DIR/$CERTS_DIR_NAME"
+  RUNTIME_SECRETS_DIR="$RUNTIME_DIR/$SECRETS_DIR_NAME"
+  RUNTIME_TRUST_DIR="$RUNTIME_DIR/$TRUST_DIR_NAME"
+
+  SERVER_KEY_FILE="$RUNTIME_SECRETS_DIR/$SERVER_KEY_FILENAME"
+  SERVER_CERTIFICATE_FILE="$RUNTIME_CERTS_DIR/$SERVER_CERTIFICATE_FILENAME"
+  SERVER_CSR_FILE="$RUNTIME_CERTS_DIR/$SERVER_CSR_FILENAME"
+  NEBULA_TRUST_BUNDLE_FILE="$RUNTIME_TRUST_DIR/$NEBULA_TRUST_BUNDLE_FILENAME"
+  ONBOARDING_API_KEY_FILE="$RUNTIME_SECRETS_DIR/$ONBOARDING_API_KEY_FILENAME"
+}
+
 prepare_paths() {
   local dir="$1"
-  mkdir -p "$dir/.data" "$dir/.runtime" "$dir/certs" "$dir/secrets" "$dir/trust"
-  chmod 700 "$dir/secrets"
+  resolve_example_paths "$dir"
+  mkdir -p "$DATA_DIR" "$RUNTIME_DIR" "$CERTS_DIR" "$SECRETS_DIR" "$TRUST_DIR"
+  chmod 700 "$SECRETS_DIR"
 }
+
 prepare_runtime_tls_paths() {
   local dir="$1"
-  mkdir -p "$dir/.runtime/certs" "$dir/.runtime/secrets" "$dir/.runtime/trust"
-  chmod 700 "$dir/.runtime/secrets"
+  resolve_example_paths "$dir"
+  mkdir -p "$RUNTIME_CERTS_DIR" "$RUNTIME_SECRETS_DIR" "$RUNTIME_TRUST_DIR"
+  chmod 700 "$RUNTIME_SECRETS_DIR"
 }
+
+# The host identity is configurable for CI/containers but defaults to the
+# machine hostname. localhost and 127.0.0.1 remain SANs for local testing.
+resolve_certificate_identity() {
+  local example_name="$1"
+
+  CERTIFICATE_HOSTNAME="${AGENT_NEBULA_EXAMPLE_HOSTNAME:-$(hostname)}"
+  CERTIFICATE_ORGANIZATION="${AGENT_NEBULA_EXAMPLE_ORGANIZATION:-$DEFAULT_CERTIFICATE_ORGANIZATION}"
+  CERTIFICATE_ORGANIZATIONAL_UNIT="${AGENT_NEBULA_EXAMPLE_NAME:-$example_name}"
+  CERTIFICATE_SUBJECT="/CN=${CERTIFICATE_HOSTNAME}/O=${CERTIFICATE_ORGANIZATION}/OU=${CERTIFICATE_ORGANIZATIONAL_UNIT}"
+  if [[ "$CERTIFICATE_HOSTNAME" == "localhost" ]]; then
+    CERTIFICATE_SAN="DNS:localhost,IP:127.0.0.1"
+  else
+    CERTIFICATE_SAN="DNS:${CERTIFICATE_HOSTNAME},DNS:localhost,IP:127.0.0.1"
+  fi
+}
+
+generate_private_key() {
+  local key_file="$1"
+  require_command openssl
+
+  if [[ ! -f "$key_file" ]]; then
+    openssl genpkey -algorithm RSA -pkeyopt "rsa_keygen_bits:${DEFAULT_RSA_KEY_BITS}" \
+      -out "$key_file" >/dev/null 2>&1
+    chmod 600 "$key_file"
+  fi
+}
+
 generate_local_ca() {
   local dir="$1"
   require_command openssl
-  if [[ ! -f "$dir/trust/local-ca.crt" ]]; then
-    openssl req -x509 -newkey rsa:3072 -sha256 -days 30 -nodes \
+  prepare_paths "$dir"
+
+  local ca_key_file="$SECRETS_DIR/$LOCAL_CA_KEY_FILENAME"
+  local ca_certificate_file="$TRUST_DIR/$LOCAL_CA_CERTIFICATE_FILENAME"
+  if [[ ! -f "$ca_certificate_file" ]]; then
+    openssl req -x509 -newkey "rsa:${DEFAULT_RSA_KEY_BITS}" -sha256 \
+      -days "$DEFAULT_CERTIFICATE_VALIDITY_DAYS" -nodes \
       -subj "/CN=Agent Nebula Examples Local CA" \
-      -keyout "$dir/secrets/local-ca.key" -out "$dir/trust/local-ca.crt" >/dev/null 2>&1
-    chmod 600 "$dir/secrets/local-ca.key"
+      -keyout "$ca_key_file" -out "$ca_certificate_file" >/dev/null 2>&1
+    chmod 600 "$ca_key_file"
   fi
 }
+
 generate_server_certificate() {
   local dir="$1" name="$2"
   generate_local_ca "$dir"
-  if [[ ! -f "$dir/certs/server.crt" ]]; then
-    openssl req -new -newkey rsa:3072 -nodes -subj "/CN=localhost" \
-      -keyout "$dir/secrets/server.key" -out "$dir/.runtime/server.csr" >/dev/null 2>&1
-    printf 'subjectAltName=DNS:localhost,IP:127.0.0.1\nextendedKeyUsage=serverAuth\n' > "$dir/.runtime/server.ext"
-    openssl x509 -req -sha256 -days 30 -in "$dir/.runtime/server.csr" \
-      -CA "$dir/trust/local-ca.crt" -CAkey "$dir/secrets/local-ca.key" -CAcreateserial \
-      -extfile "$dir/.runtime/server.ext" -out "$dir/certs/server.crt" >/dev/null 2>&1
-    chmod 600 "$dir/secrets/server.key"
+  resolve_certificate_identity "$name"
+
+  local server_key_file="$SECRETS_DIR/$SERVER_KEY_FILENAME"
+  local server_certificate_file="$CERTS_DIR/$SERVER_CERTIFICATE_FILENAME"
+  local csr_file="$RUNTIME_DIR/$SERVER_CSR_FILENAME"
+  local extensions_file="$RUNTIME_DIR/server.ext"
+
+  if [[ ! -f "$server_certificate_file" ]]; then
+    generate_private_key "$server_key_file"
+    openssl req -new -sha256 -key "$server_key_file" -subj "$CERTIFICATE_SUBJECT" \
+      -addext "subjectAltName=${CERTIFICATE_SAN}" -out "$csr_file" >/dev/null 2>&1
+    printf 'subjectAltName=%s\nextendedKeyUsage=serverAuth\n' "$CERTIFICATE_SAN" > "$extensions_file"
+    openssl x509 -req -sha256 -days "$DEFAULT_CERTIFICATE_VALIDITY_DAYS" -in "$csr_file" \
+      -CA "$TRUST_DIR/$LOCAL_CA_CERTIFICATE_FILENAME" \
+      -CAkey "$SECRETS_DIR/$LOCAL_CA_KEY_FILENAME" -CAcreateserial \
+      -extfile "$extensions_file" -out "$server_certificate_file" >/dev/null 2>&1
   fi
 }
+
 generate_runtime_local_ca() {
   local dir="$1"
   require_command openssl
   prepare_runtime_tls_paths "$dir"
-  if [[ ! -f "$dir/.runtime/trust/local-ca.crt" ]]; then
-    openssl req -x509 -newkey rsa:3072 -sha256 -days 30 -nodes \
+
+  local ca_key_file="$RUNTIME_SECRETS_DIR/$LOCAL_CA_KEY_FILENAME"
+  local ca_certificate_file="$RUNTIME_TRUST_DIR/$LOCAL_CA_CERTIFICATE_FILENAME"
+  if [[ ! -f "$ca_certificate_file" ]]; then
+    openssl req -x509 -newkey "rsa:${DEFAULT_RSA_KEY_BITS}" -sha256 \
+      -days "$DEFAULT_CERTIFICATE_VALIDITY_DAYS" -nodes \
       -subj "/CN=Agent Nebula Examples Local CA" \
-      -keyout "$dir/.runtime/secrets/local-ca.key" \
-      -out "$dir/.runtime/trust/local-ca.crt" >/dev/null 2>&1
-    chmod 600 "$dir/.runtime/secrets/local-ca.key"
+      -keyout "$ca_key_file" -out "$ca_certificate_file" >/dev/null 2>&1
+    chmod 600 "$ca_key_file"
   fi
 }
+
 generate_runtime_server_certificate() {
   local dir="$1" name="$2"
   generate_runtime_local_ca "$dir"
-  if [[ ! -f "$dir/.runtime/certs/server.crt" ]]; then
-    openssl req -new -newkey rsa:3072 -nodes -subj "/CN=localhost" \
-      -keyout "$dir/.runtime/secrets/server.key" \
-      -out "$dir/.runtime/server.csr" >/dev/null 2>&1
-    printf 'subjectAltName=DNS:localhost,IP:127.0.0.1\nextendedKeyUsage=serverAuth\n' \
-      > "$dir/.runtime/server.ext"
-    openssl x509 -req -sha256 -days 30 -in "$dir/.runtime/server.csr" \
-      -CA "$dir/.runtime/trust/local-ca.crt" \
-      -CAkey "$dir/.runtime/secrets/local-ca.key" -CAcreateserial \
-      -extfile "$dir/.runtime/server.ext" \
-      -out "$dir/.runtime/certs/server.crt" >/dev/null 2>&1
-    chmod 600 "$dir/.runtime/secrets/server.key"
+  resolve_certificate_identity "$name"
+
+  local extensions_file="$RUNTIME_DIR/server.ext"
+  if [[ ! -f "$SERVER_CERTIFICATE_FILE" ]]; then
+    generate_private_key "$SERVER_KEY_FILE"
+    openssl req -new -sha256 -key "$SERVER_KEY_FILE" -subj "$CERTIFICATE_SUBJECT" \
+      -addext "subjectAltName=${CERTIFICATE_SAN}" -out "$SERVER_CSR_FILE" >/dev/null 2>&1
+    printf 'subjectAltName=%s\nextendedKeyUsage=serverAuth\n' "$CERTIFICATE_SAN" > "$extensions_file"
+    openssl x509 -req -sha256 -days "$DEFAULT_CERTIFICATE_VALIDITY_DAYS" -in "$SERVER_CSR_FILE" \
+      -CA "$RUNTIME_TRUST_DIR/$LOCAL_CA_CERTIFICATE_FILENAME" \
+      -CAkey "$RUNTIME_SECRETS_DIR/$LOCAL_CA_KEY_FILENAME" -CAcreateserial \
+      -extfile "$extensions_file" -out "$SERVER_CERTIFICATE_FILE" >/dev/null 2>&1
   fi
 }
+
+# Agent Nebula examples keep the private key on the agent host and submit only
+# this CSR to Identity & Trust. Agent Nebula signs it and returns the public
+# certificate; its trust bundle is installed separately during onboarding.
+generate_runtime_server_csr() {
+  local dir="$1" name="$2"
+  prepare_runtime_tls_paths "$dir"
+  resolve_certificate_identity "$name"
+  generate_private_key "$SERVER_KEY_FILE"
+
+  if [[ ! -f "$SERVER_CSR_FILE" ]]; then
+    openssl req -new -sha256 \
+      -key "$SERVER_KEY_FILE" \
+      -subj "$CERTIFICATE_SUBJECT" \
+      -addext "subjectAltName=${CERTIFICATE_SAN}" \
+      -out "$SERVER_CSR_FILE" >/dev/null 2>&1
+  fi
+
+  log "Generated Agent Nebula CSR: $SERVER_CSR_FILE"
+  log "CSR SANs: $CERTIFICATE_SAN"
+  log "Private key remains local: $SERVER_KEY_FILE"
+}
+
+prepare_nebula_runtime_material_if_available() {
+  local dir="$1"
+  prepare_runtime_tls_paths "$dir"
+
+  local source_trust_bundle="${AGENT_NEBULA_TRUST_BUNDLE_FILE:-}"
+  if [[ -n "$source_trust_bundle" ]]; then
+    [[ -f "$source_trust_bundle" ]] || {
+      echo "AGENT_NEBULA_TRUST_BUNDLE_FILE does not exist: $source_trust_bundle" >&2
+      exit 1
+    }
+    cp "$source_trust_bundle" "$NEBULA_TRUST_BUNDLE_FILE"
+    log "Installed Agent Nebula trust bundle: $NEBULA_TRUST_BUNDLE_FILE"
+  fi
+
+  local api_key="${NEBULA_ONBOARDING_API_KEY:-}"
+  if [[ -n "$api_key" ]]; then
+    printf '%s' "$api_key" > "$ONBOARDING_API_KEY_FILE"
+    chmod 600 "$ONBOARDING_API_KEY_FILE"
+    log "Installed Agent Nebula onboarding API key: $ONBOARDING_API_KEY_FILE"
+  fi
+}
+
 generate_client_key() {
   local dir="$1"
   require_command openssl
-  if [[ ! -f "$dir/secrets/oauth-client.key" ]]; then
+  prepare_paths "$dir"
+
+  local key_file="$SECRETS_DIR/$OAUTH_CLIENT_KEY_FILENAME"
+  if [[ ! -f "$key_file" ]]; then
     openssl genpkey -algorithm EC -pkeyopt ec_paramgen_curve:P-256 \
-      -out "$dir/secrets/oauth-client.key" >/dev/null 2>&1
-    chmod 600 "$dir/secrets/oauth-client.key"
+      -out "$key_file" >/dev/null 2>&1
+    chmod 600 "$key_file"
   fi
 }
+
 require_secret_from_env() {
   local dir="$1" env_name="$2" filename="$3"
+  prepare_paths "$dir"
+
   local value="${!env_name:-}"
+  local target_file="$SECRETS_DIR/$filename"
   if [[ -n "$value" ]]; then
-    printf '%s' "$value" > "$dir/secrets/$filename"
-    chmod 600 "$dir/secrets/$filename"
-  elif [[ ! -s "$dir/secrets/$filename" ]]; then
-    log "$env_name is not set; $dir/secrets/$filename must be provisioned before running this example."
+    printf '%s' "$value" > "$target_file"
+    chmod 600 "$target_file"
+  elif [[ ! -s "$target_file" ]]; then
+    log "$env_name is not set; $target_file must be provisioned before running this example."
   fi
 }
 
 prepare_nebula_runtime_material() {
   local dir="$1"
-  local trust_file="${AGENT_NEBULA_TRUST_BUNDLE_FILE:-}"
   prepare_runtime_tls_paths "$dir"
-  if [[ -n "$trust_file" ]]; then
-    [[ -f "$trust_file" ]] || { echo "AGENT_NEBULA_TRUST_BUNDLE_FILE does not exist: $trust_file" >&2; exit 1; }
-    cp "$trust_file" "$dir/.runtime/trust/agent-nebula-ca.crt"
-  elif [[ ! -s "$dir/.runtime/trust/agent-nebula-ca.crt" ]]; then
-    echo "Set AGENT_NEBULA_TRUST_BUNDLE_FILE to the CA bundle used by Agent Nebula." >&2
+
+  local source_trust_bundle="${AGENT_NEBULA_TRUST_BUNDLE_FILE:-}"
+  if [[ -n "$source_trust_bundle" ]]; then
+    [[ -f "$source_trust_bundle" ]] || {
+      echo "AGENT_NEBULA_TRUST_BUNDLE_FILE does not exist: $source_trust_bundle" >&2
+      exit 1
+    }
+    cp "$source_trust_bundle" "$NEBULA_TRUST_BUNDLE_FILE"
+  elif [[ ! -s "$NEBULA_TRUST_BUNDLE_FILE" ]]; then
+    echo "Set AGENT_NEBULA_TRUST_BUNDLE_FILE or provision $NEBULA_TRUST_BUNDLE_FILE." >&2
     exit 1
   fi
+
   local api_key="${NEBULA_ONBOARDING_API_KEY:-}"
   if [[ -n "$api_key" ]]; then
-    printf '%s' "$api_key" > "$dir/.runtime/secrets/onboarding-api-key"
-    chmod 600 "$dir/.runtime/secrets/onboarding-api-key"
-  elif [[ ! -s "$dir/.runtime/secrets/onboarding-api-key" ]]; then
-    echo "Set NEBULA_ONBOARDING_API_KEY or provision .runtime/secrets/onboarding-api-key." >&2
+    printf '%s' "$api_key" > "$ONBOARDING_API_KEY_FILE"
+    chmod 600 "$ONBOARDING_API_KEY_FILE"
+  elif [[ ! -s "$ONBOARDING_API_KEY_FILE" ]]; then
+    echo "Set NEBULA_ONBOARDING_API_KEY or provision $ONBOARDING_API_KEY_FILE." >&2
     exit 1
   fi
 }
+
 prepare_runtime_oauth_keys() {
   local dir="$1"
   require_command openssl
   prepare_runtime_tls_paths "$dir"
+
+  local name key_file
   for name in oauth-auth dpop; do
-    if [[ ! -f "$dir/.runtime/secrets/$name.key" ]]; then
-      openssl genpkey -algorithm EC -pkeyopt ec_paramgen_curve:P-256 -out "$dir/.runtime/secrets/$name.key" >/dev/null 2>&1
-      chmod 600 "$dir/.runtime/secrets/$name.key"
+    key_file="$RUNTIME_SECRETS_DIR/$name.key"
+    if [[ ! -f "$key_file" ]]; then
+      openssl genpkey -algorithm EC -pkeyopt ec_paramgen_curve:P-256 \
+        -out "$key_file" >/dev/null 2>&1
+      chmod 600 "$key_file"
     fi
   done
 }

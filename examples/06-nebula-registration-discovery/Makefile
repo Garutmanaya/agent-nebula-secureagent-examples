@@ -2,7 +2,7 @@
 ROOT := ../..
 
 init:
-	$(ROOT)/scripts/init-example.sh . nebula-runtime
+	$(ROOT)/scripts/init-example.sh . nebula-csr
 
 run:
 	@target="$(word 2,$(MAKECMDGOALS))"; \
