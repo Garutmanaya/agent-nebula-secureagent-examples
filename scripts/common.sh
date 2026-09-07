@@ -8,6 +8,11 @@ prepare_paths() {
   mkdir -p "$dir/.data" "$dir/.runtime" "$dir/certs" "$dir/secrets" "$dir/trust"
   chmod 700 "$dir/secrets"
 }
+prepare_runtime_tls_paths() {
+  local dir="$1"
+  mkdir -p "$dir/.runtime/certs" "$dir/.runtime/secrets" "$dir/.runtime/trust"
+  chmod 700 "$dir/.runtime/secrets"
+}
 generate_local_ca() {
   local dir="$1"
   require_command openssl
@@ -31,6 +36,35 @@ generate_server_certificate() {
     chmod 600 "$dir/secrets/server.key"
   fi
 }
+generate_runtime_local_ca() {
+  local dir="$1"
+  require_command openssl
+  prepare_runtime_tls_paths "$dir"
+  if [[ ! -f "$dir/.runtime/trust/local-ca.crt" ]]; then
+    openssl req -x509 -newkey rsa:3072 -sha256 -days 30 -nodes \
+      -subj "/CN=Agent Nebula Examples Local CA" \
+      -keyout "$dir/.runtime/secrets/local-ca.key" \
+      -out "$dir/.runtime/trust/local-ca.crt" >/dev/null 2>&1
+    chmod 600 "$dir/.runtime/secrets/local-ca.key"
+  fi
+}
+generate_runtime_server_certificate() {
+  local dir="$1" name="$2"
+  generate_runtime_local_ca "$dir"
+  if [[ ! -f "$dir/.runtime/certs/server.crt" ]]; then
+    openssl req -new -newkey rsa:3072 -nodes -subj "/CN=localhost" \
+      -keyout "$dir/.runtime/secrets/server.key" \
+      -out "$dir/.runtime/server.csr" >/dev/null 2>&1
+    printf 'subjectAltName=DNS:localhost,IP:127.0.0.1\nextendedKeyUsage=serverAuth\n' \
+      > "$dir/.runtime/server.ext"
+    openssl x509 -req -sha256 -days 30 -in "$dir/.runtime/server.csr" \
+      -CA "$dir/.runtime/trust/local-ca.crt" \
+      -CAkey "$dir/.runtime/secrets/local-ca.key" -CAcreateserial \
+      -extfile "$dir/.runtime/server.ext" \
+      -out "$dir/.runtime/certs/server.crt" >/dev/null 2>&1
+    chmod 600 "$dir/.runtime/secrets/server.key"
+  fi
+}
 generate_client_key() {
   local dir="$1"
   require_command openssl
@@ -49,4 +83,36 @@ require_secret_from_env() {
   elif [[ ! -s "$dir/secrets/$filename" ]]; then
     log "$env_name is not set; $dir/secrets/$filename must be provisioned before running this example."
   fi
+}
+
+prepare_nebula_runtime_material() {
+  local dir="$1"
+  local trust_file="${AGENT_NEBULA_TRUST_BUNDLE_FILE:-}"
+  prepare_runtime_tls_paths "$dir"
+  if [[ -n "$trust_file" ]]; then
+    [[ -f "$trust_file" ]] || { echo "AGENT_NEBULA_TRUST_BUNDLE_FILE does not exist: $trust_file" >&2; exit 1; }
+    cp "$trust_file" "$dir/.runtime/trust/agent-nebula-ca.crt"
+  elif [[ ! -s "$dir/.runtime/trust/agent-nebula-ca.crt" ]]; then
+    echo "Set AGENT_NEBULA_TRUST_BUNDLE_FILE to the CA bundle used by Agent Nebula." >&2
+    exit 1
+  fi
+  local api_key="${NEBULA_ONBOARDING_API_KEY:-}"
+  if [[ -n "$api_key" ]]; then
+    printf '%s' "$api_key" > "$dir/.runtime/secrets/onboarding-api-key"
+    chmod 600 "$dir/.runtime/secrets/onboarding-api-key"
+  elif [[ ! -s "$dir/.runtime/secrets/onboarding-api-key" ]]; then
+    echo "Set NEBULA_ONBOARDING_API_KEY or provision .runtime/secrets/onboarding-api-key." >&2
+    exit 1
+  fi
+}
+prepare_runtime_oauth_keys() {
+  local dir="$1"
+  require_command openssl
+  prepare_runtime_tls_paths "$dir"
+  for name in oauth-auth dpop; do
+    if [[ ! -f "$dir/.runtime/secrets/$name.key" ]]; then
+      openssl genpkey -algorithm EC -pkeyopt ec_paramgen_curve:P-256 -out "$dir/.runtime/secrets/$name.key" >/dev/null 2>&1
+      chmod 600 "$dir/.runtime/secrets/$name.key"
+    fi
+  done
 }

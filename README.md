@@ -24,6 +24,12 @@ The suite is intentionally small. Historical examples have been moved to `exampl
 | 02 | [A2A Multi-Skill](examples/02-a2a-multiskill/README.md) | Establishes multi-skill as the normal SecureAgent model. Advertises three skills and makes the client explicitly select, invoke, and validate every skill. |
 | 03 | [A2A Multi-Binding](examples/03-a2a-multi-binding/README.md) | Registers the same skills once and verifies every skill independently over JSON-RPC, HTTP+JSON, and gRPC using binding-specific client instances. |
 | 04 | [A2A HTTPS](examples/04-a2a-https/README.md) | Retains the multi-skill model and adds certificate-verified HTTPS using a generated local CA and server identity; the client tests every skill without disabling TLS verification. |
+| 05 | [A2A Multi-Binding + TLS](examples/05-a2a-multi-binding-tls/README.md) | Verifies every skill over JSON-RPC/HTTPS, HTTP+JSON/HTTPS, and gRPC/TLS. |
+| 06 | [Agent Nebula Registration & Discovery](examples/06-nebula-registration-discovery/README.md) | Registers the provider with Agent Nebula Registry, discovers it by capability, and invokes every skill through the discovered record. |
+| 07 | [Agent Nebula OAuth](examples/07-nebula-oauth/README.md) | Adds OAuth-protected A2A invocation after Registry discovery and verifies every skill. |
+| 08 | [Skill-Level OAuth](examples/08-nebula-skill-oauth/README.md) | Verifies deterministic skill selection and distinct least-privilege OAuth scopes per skill. |
+| 09 | [Agent-to-Agent](examples/09-nebula-agent-to-agent/README.md) | Runs a dual-role SecureAgent that serves A2A while discovering and invoking a downstream Registry provider. |
+| 10 | [API-Key Protected Agent](examples/10-a2a-api-key/README.md) | Reserved for API-key endpoint security; current Platform server composition lacks the required external verifier configuration boundary, so no fake runnable example is provided. |
 
 ## Verification philosophy
 
