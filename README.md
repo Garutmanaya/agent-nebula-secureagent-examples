@@ -31,6 +31,7 @@ The suite is intentionally small. Historical examples have been moved to `exampl
 | 09 | [Agent-to-Agent](examples/09-nebula-agent-to-agent/README.md) | Runs a dual-role SecureAgent that serves A2A while discovering and invoking a downstream Registry provider. |
 | 10 | [API-Key Protected Agent](examples/10-a2a-api-key/README.md) | Reserved for API-key endpoint security; current Platform server composition lacks the required external verifier configuration boundary, so no fake runnable example is provided. |
 | 11 | [A2A + A2UI v1.0 Acceptance](examples/11-a2a-a2ui/README.md) | Verifies multi-skill A2A selection, A2UI v1.0 Agent Card advertisement, complete `SkillResult` preservation, A2UI DataPart output, and ordinary non-A2UI fallback. |
+| 12 | [A2UI v1.0 Actions over A2A](examples/12-a2a-a2ui-actions/README.md) | Verifies renderer-to-agent A2UI `action`, renderer data-model metadata, correlated `actionResponse`, and updated A2UI over standard A2A. |
 
 ## Verification philosophy
 
