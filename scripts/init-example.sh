@@ -12,6 +12,7 @@ MODE="${2:-basic}"
 EXAMPLE_NAME="$(basename "$DIR")"
 
 prepare_paths "$DIR"
+prepare_example_configs "$DIR"
 
 case "$MODE" in
   basic)

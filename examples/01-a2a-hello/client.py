@@ -5,6 +5,8 @@ from __future__ import annotations
 import asyncio
 from pathlib import Path
 
+from examples.example_paths import config_path
+
 from agent_nebula_secureagent import SecureAgent
 
 HERE = Path(__file__).resolve().parent
@@ -13,11 +15,11 @@ SERVER_URL = "http://localhost:9001/"
 
 async def main() -> None:
     """Invoke the server's advertised ``hello`` skill through SecureAgent."""
-    agent = SecureAgent(config=HERE / "secureagent.conf")
+    agent = SecureAgent(config=config_path(HERE, "secureagent.conf"))
     agent.use_protocol(
         "a2a",
         role="client",
-        config=HERE / "a2aclient.conf",
+        config=config_path(HERE, "a2aclient.conf"),
     )
 
     agent_card = await agent.resolve_agent_card(SERVER_URL)

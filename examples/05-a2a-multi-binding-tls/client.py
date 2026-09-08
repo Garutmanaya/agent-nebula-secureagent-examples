@@ -1,6 +1,8 @@
 """Verify every skill over JSON-RPC/HTTPS, HTTP+JSON/HTTPS, and gRPC/TLS."""
 import asyncio
 from pathlib import Path
+
+from examples.example_paths import config_path
 from agent_nebula_secureagent import SecureAgent
 HERE=Path(__file__).resolve().parent
 SERVER_URL="https://localhost:9005/"
@@ -29,7 +31,7 @@ def response_text(responses):
 async def main():
     total=0
     for label, config in BINDINGS:
-        agent=SecureAgent(config=HERE/"secureagent.conf")
+        agent=SecureAgent(config=config_path(HERE, "secureagent.conf"))
         agent.use_protocol("a2a",role="client",config=HERE/config)
         try:
             for skill_id,data,expected in SKILL_CASES:

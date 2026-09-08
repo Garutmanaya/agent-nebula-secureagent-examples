@@ -1,15 +1,17 @@
 """Basic A2A server."""
 from pathlib import Path
 
+from examples.example_paths import config_path
+
 from agent_nebula_secureagent import SecureAgent
 
 HERE = Path(__file__).resolve().parent
 
-agent = SecureAgent(config=HERE / "secureagent.conf")
+agent = SecureAgent(config=config_path(HERE, "secureagent.conf"))
 agent.use_protocol(
     "a2a",
     role="server",
-    config=HERE / "a2aserver.conf",
+    config=config_path(HERE, "a2aserver.conf"),
 )
 
 

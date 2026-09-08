@@ -4,6 +4,8 @@ from __future__ import annotations
 import asyncio
 from pathlib import Path
 
+from examples.example_paths import config_path
+
 from agent_nebula_secureagent import SecureAgent
 
 HERE = Path(__file__).resolve().parent
@@ -56,8 +58,8 @@ async def main() -> None:
     if not trust_bundle.is_file():
         raise RuntimeError("missing local CA; run `make init` before the client")
 
-    agent = SecureAgent(config=HERE / "secureagent.conf")
-    agent.use_protocol("a2a", role="client", config=HERE / "a2aclient.conf")
+    agent = SecureAgent(config=config_path(HERE, "secureagent.conf"))
+    agent.use_protocol("a2a", role="client", config=config_path(HERE, "a2aclient.conf"))
     try:
         card = await agent.resolve_agent_card(SERVER_URL)
         interfaces = card.get("supported_interfaces", [])

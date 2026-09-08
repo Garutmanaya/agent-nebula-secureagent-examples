@@ -5,6 +5,8 @@ set -euo pipefail
 # initialization modes do not duplicate directory or filename conventions.
 readonly EXAMPLE_RUNTIME_DIR_NAME=".runtime"
 readonly EXAMPLE_DATA_DIR_NAME=".data"
+readonly EXAMPLE_CONFIG_DIR_NAME="config"
+readonly EXAMPLES_RUNTIME_ROOT_ENV="AGENT_NEBULA_SECUREAGENTS_EXAMPLES_RUNTIME"
 readonly CERTS_DIR_NAME="certs"
 readonly SECRETS_DIR_NAME="secrets"
 readonly TRUST_DIR_NAME="trust"
@@ -33,13 +35,23 @@ require_command() {
 # instead of rebuilding .runtime/certs/secrets/trust paths themselves.
 resolve_example_paths() {
   local dir="$1"
+  local example_name
+  example_name="$(basename "$dir")"
 
   EXAMPLE_DIR="$dir"
-  DATA_DIR="$dir/$EXAMPLE_DATA_DIR_NAME"
-  RUNTIME_DIR="$dir/$EXAMPLE_RUNTIME_DIR_NAME"
-  CERTS_DIR="$dir/$CERTS_DIR_NAME"
-  SECRETS_DIR="$dir/$SECRETS_DIR_NAME"
-  TRUST_DIR="$dir/$TRUST_DIR_NAME"
+  if [[ -n "${AGENT_NEBULA_SECUREAGENTS_EXAMPLES_RUNTIME:-}" ]]; then
+    EXAMPLE_WORK_DIR="${AGENT_NEBULA_SECUREAGENTS_EXAMPLES_RUNTIME%/}/$example_name"
+    CONFIG_DIR="$EXAMPLE_WORK_DIR/$EXAMPLE_CONFIG_DIR_NAME"
+  else
+    EXAMPLE_WORK_DIR="$dir"
+    CONFIG_DIR="$dir"
+  fi
+
+  DATA_DIR="$EXAMPLE_WORK_DIR/$EXAMPLE_DATA_DIR_NAME"
+  RUNTIME_DIR="$EXAMPLE_WORK_DIR/$EXAMPLE_RUNTIME_DIR_NAME"
+  CERTS_DIR="$EXAMPLE_WORK_DIR/$CERTS_DIR_NAME"
+  SECRETS_DIR="$EXAMPLE_WORK_DIR/$SECRETS_DIR_NAME"
+  TRUST_DIR="$EXAMPLE_WORK_DIR/$TRUST_DIR_NAME"
   RUNTIME_CERTS_DIR="$RUNTIME_DIR/$CERTS_DIR_NAME"
   RUNTIME_SECRETS_DIR="$RUNTIME_DIR/$SECRETS_DIR_NAME"
   RUNTIME_TRUST_DIR="$RUNTIME_DIR/$TRUST_DIR_NAME"
@@ -56,6 +68,36 @@ prepare_paths() {
   resolve_example_paths "$dir"
   mkdir -p "$DATA_DIR" "$RUNTIME_DIR" "$CERTS_DIR" "$SECRETS_DIR" "$TRUST_DIR"
   chmod 700 "$SECRETS_DIR"
+}
+
+# When an external examples runtime root is configured, keep generated config
+# beside that example's runtime/data. Source configuration remains immutable.
+prepare_example_configs() {
+  local dir="$1"
+  resolve_example_paths "$dir"
+
+  if [[ "$CONFIG_DIR" == "$dir" ]]; then
+    return
+  fi
+
+  mkdir -p "$CONFIG_DIR"
+
+  local source target
+  for source in "$dir"/*.conf; do
+    [[ -f "$source" ]] || continue
+    target="$CONFIG_DIR/$(basename "$source")"
+    cp "$source" "$target"
+
+    # Runtime/application roots are authoritative absolute paths in generated
+    # configuration. Explicit .runtime references are normalized as well.
+    sed -i \
+      -e "s|^product_root[[:space:]]*=.*$|product_root = $DATA_DIR|" \
+      -e "s|^runtime_root[[:space:]]*=.*$|runtime_root = $RUNTIME_DIR|" \
+      -e "s|\.runtime/|$RUNTIME_DIR/|g" \
+      "$target"
+  done
+
+  log "Generated example configuration: $CONFIG_DIR"
 }
 
 prepare_runtime_tls_paths() {

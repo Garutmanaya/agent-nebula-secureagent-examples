@@ -3,6 +3,8 @@
 import asyncio
 from pathlib import Path
 
+from examples.example_paths import config_path
+
 from agent_nebula_secureagent import SecureAgent
 
 
@@ -51,13 +53,13 @@ def print_discovery_results(found):
 
 async def main():
     agent = SecureAgent(
-        config=HERE / "secureagent.conf",
-        nebula_config=HERE / "nebula.conf",
+        config=config_path(HERE, "secureagent.conf"),
+        nebula_config=config_path(HERE, "nebula.conf"),
     )
     agent.use_protocol(
         "a2a",
         role="client",
-        config=HERE / "a2aclient.conf",
+        config=config_path(HERE, "a2aclient.conf"),
     )
 
     try:

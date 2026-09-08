@@ -7,8 +7,8 @@ init:
 run:
 	@target="$(word 2,$(MAKECMDGOALS))"; \
 	case "$$target" in \
-		server) cd $(ROOT) && uv run python examples/01-a2a-hello/main.py ;; \
-		client) cd $(ROOT) && uv run python examples/01-a2a-hello/client.py ;; \
+		server) cd $(ROOT) && PYTHONPATH="$(abspath $(ROOT))$${PYTHONPATH:+:$${PYTHONPATH}}" AGENT_NEBULA_EXAMPLE_CONFIG_DIR="$${AGENT_NEBULA_SECUREAGENTS_EXAMPLES_RUNTIME:+$${AGENT_NEBULA_SECUREAGENTS_EXAMPLES_RUNTIME%/}/$(notdir $(CURDIR))/config}" uv run python examples/01-a2a-hello/main.py ;; \
+		client) cd $(ROOT) && PYTHONPATH="$(abspath $(ROOT))$${PYTHONPATH:+:$${PYTHONPATH}}" AGENT_NEBULA_EXAMPLE_CONFIG_DIR="$${AGENT_NEBULA_SECUREAGENTS_EXAMPLES_RUNTIME:+$${AGENT_NEBULA_SECUREAGENTS_EXAMPLES_RUNTIME%/}/$(notdir $(CURDIR))/config}" uv run python examples/01-a2a-hello/client.py ;; \
 		*) echo "Usage: make run server | make run client" >&2; exit 2 ;; \
 	esac
 
@@ -17,4 +17,4 @@ server client:
 	@:
 
 clean:
-	rm -rf .data .runtime runtime certs secrets trust
+	$(ROOT)/scripts/clean-example.sh .

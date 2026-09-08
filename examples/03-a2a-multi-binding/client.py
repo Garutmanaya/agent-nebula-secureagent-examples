@@ -4,6 +4,8 @@ from __future__ import annotations
 import asyncio
 from pathlib import Path
 
+from examples.example_paths import config_path
+
 from agent_nebula_secureagent import SecureAgent
 
 HERE = Path(__file__).resolve().parent
@@ -59,7 +61,7 @@ async def _test_all_skills(agent: SecureAgent, server_url: str, label: str) -> i
 async def _test_binding(label: str, config_name: str) -> int:
     # A separate client instance forces the official A2A client to negotiate only
     # the binding under test instead of falling back to another advertised interface.
-    agent = SecureAgent(config=HERE / "secureagent.conf")
+    agent = SecureAgent(config=config_path(HERE, "secureagent.conf"))
     agent.use_protocol("a2a", role="client", config=HERE / config_name)
     try:
         return await _test_all_skills(agent, SERVER_URL, label)
@@ -68,8 +70,8 @@ async def _test_binding(label: str, config_name: str) -> int:
 
 
 async def main() -> None:
-    discovery = SecureAgent(config=HERE / "secureagent.conf")
-    discovery.use_protocol("a2a", role="client", config=HERE / "a2aclient-jsonrpc.conf")
+    discovery = SecureAgent(config=config_path(HERE, "secureagent.conf"))
+    discovery.use_protocol("a2a", role="client", config=config_path(HERE, "a2aclient-jsonrpc.conf"))
     try:
         card = await discovery.resolve_agent_card(SERVER_URL)
         print(card)

@@ -1,10 +1,12 @@
 import asyncio
 from pathlib import Path
+
+from examples.example_paths import config_path
 from agent_nebula_secureagent import SecureAgent
 HERE=Path(__file__).resolve().parent
 async def main():
-    agent=SecureAgent(config=HERE/"secureagent.conf",nebula_config=HERE/"nebula.conf")
-    agent.use_protocol("a2a",role="client",config=HERE/"a2aclient.conf")
+    agent=SecureAgent(config=config_path(HERE, "secureagent.conf"),nebula_config=config_path(HERE, "nebula.conf"))
+    agent.use_protocol("a2a",role="client",config=config_path(HERE, "a2aclient.conf"))
     try:
         agents=await agent.discover(capability="operations.add")
         if not agents: raise AssertionError("orchestrator not discovered")
