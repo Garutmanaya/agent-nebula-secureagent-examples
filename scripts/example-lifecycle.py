@@ -164,10 +164,9 @@ def secrets_init() -> None:
     """Create/provision shared non-PKI secrets used by secured examples."""
     env_init()
     secrets = external_root() / "secrets"
-    private_key(secrets / "oauth-auth.key", ec=True)
-    private_key(secrets / "dpop.key", ec=True)
+    private_key(secrets / "oauth-authentication-key.pem", ec=True)
+    private_key(secrets / "oauth-dpop-key.pem", ec=True)
     provision_env_secret("NEBULA_ONBOARDING_API_KEY", secrets / "onboarding-api-key")
-    provision_env_secret("NEBULA_OAUTH_CLIENT_ID", secrets / "oauth-client-id")
     print(f"Shared secrets: {secrets}")
 
 
@@ -178,7 +177,22 @@ def provision_env_secret(env_name: str, target: Path) -> None:
         target.chmod(0o600)
 
 
+def required_environment_url(name: str) -> str:
+    value = os.environ.get(name, "").strip().rstrip("/")
+    if not value:
+        raise SystemExit(
+            f"{name} is required by this example. Copy .env.example to .env "
+            "and configure the Agent Nebula environment URLs."
+        )
+    return value
+
+
 def rewrite_config(text: str, p: dict[str, Path]) -> str:
+    if "{{NEBULA_URL}}" in text:
+        text = text.replace("{{NEBULA_URL}}", required_environment_url("NEBULA_URL"))
+    if "{{OAUTH_URL}}" in text:
+        text = text.replace("{{OAUTH_URL}}", required_environment_url("OAUTH_URL"))
+
     replacements = {
         ".runtime/trust/agent-nebula-ca.crt": str(p["certs"] / "agent-nebula-ca.crt"),
         ".runtime/trust/local-ca.crt": str(p["certs"] / "trust-bundle.pem"),
@@ -195,12 +209,12 @@ def rewrite_config(text: str, p: dict[str, Path]) -> str:
         "certs/client.key": str(p["certs"] / "client.key"),
         ".runtime/secrets/onboarding-api-key": str(p["secrets"] / "onboarding-api-key"),
         "secrets/onboarding-api-key": str(p["secrets"] / "onboarding-api-key"),
-        ".runtime/secrets/oauth-client-id": str(p["secrets"] / "oauth-client-id"),
-        "secrets/oauth-client-id": str(p["secrets"] / "oauth-client-id"),
-        ".runtime/secrets/oauth-auth.key": str(p["secrets"] / "oauth-auth.key"),
-        "secrets/oauth-auth.key": str(p["secrets"] / "oauth-auth.key"),
-        ".runtime/secrets/dpop.key": str(p["secrets"] / "dpop.key"),
-        "secrets/dpop.key": str(p["secrets"] / "dpop.key"),
+        ".runtime/data/client-id": str(p["data"] / "client-id"),
+        "data/client-id": str(p["data"] / "client-id"),
+        ".runtime/secrets/oauth-authentication-key.pem": str(p["secrets"] / "oauth-authentication-key.pem"),
+        "secrets/oauth-authentication-key.pem": str(p["secrets"] / "oauth-authentication-key.pem"),
+        ".runtime/secrets/oauth-dpop-key.pem": str(p["secrets"] / "oauth-dpop-key.pem"),
+        "secrets/oauth-dpop-key.pem": str(p["secrets"] / "oauth-dpop-key.pem"),
     }
     for old, new in replacements.items():
         text = text.replace(old, new)
@@ -248,7 +262,7 @@ def init_one(example_id: str) -> None:
         raise SystemExit("Shared local PKI is missing. Run: make pki-init")
     if mode in {"nebula-csr", "oauth-nebula", "nebula"} and not (p["secrets"] / "onboarding-api-key").exists():
         print("WARNING: onboarding-api-key is not present in shared secrets.")
-    if mode == "oauth-nebula" and not (p["secrets"] / "oauth-auth.key").exists():
+    if mode == "oauth-nebula" and not (p["secrets"] / "oauth-authentication-key.pem").exists():
         raise SystemExit("Shared OAuth secrets are missing. Run: make secrets-init")
     if mode == "planned":
         print("This example is reserved and has no runnable process yet.")

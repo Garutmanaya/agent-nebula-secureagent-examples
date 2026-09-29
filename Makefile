@@ -1,3 +1,7 @@
+# Local environment URLs. Shell values override values loaded from .env.
+-include .env
+export
+
 .PHONY: install lint list env-init pki-init nebula-pki-init secrets-init init run clean help server client provider orchestrator
 
 EXAMPLE := $(word 2,$(MAKECMDGOALS))

@@ -63,7 +63,9 @@ make init example-01
 
 `pki-init` creates `ca.crt`, `ca.key`, `server.crt`, `server.key`, `client.crt`, `client.key`, and `trust-bundle.pem` under the shared `certs/` directory. `init` copies shared certificate and secret material into `runtime/example-NN/certs/` and `runtime/example-NN/secrets/`. Runtime cleanup does not modify the shared material.
 
-For Agent Nebula connected examples, place the Agent Nebula trust certificate at `certs/agent-nebula-ca.crt`. `secrets-init` can provision `onboarding-api-key` from `NEBULA_ONBOARDING_API_KEY` and `oauth-client-id` from `NEBULA_OAUTH_CLIENT_ID`; it also creates the shared OAuth authentication and DPoP development keys when absent.
+OAuth examples do not provision a client ID as a secret. Dynamic Client Registration (DCR) obtains the client ID and SecureAgent persists it under `runtime/example-NN/data/client-id`. The shared OAuth authentication and DPoP keys remain under `secrets/` as `oauth-authentication-key.pem` and `oauth-dpop-key.pem`. Cleaning an example removes its runtime `data/client-id`, so the next run performs DCR again.
+
+For Agent Nebula connected examples, place the Agent Nebula trust certificate at `certs/agent-nebula-ca.crt`. `secrets-init` can provision `onboarding-api-key` from `NEBULA_ONBOARDING_API_KEY`; it also creates the shared OAuth authentication and DPoP development keys when absent.
 
 ## Agent Nebula PKI enrollment
 

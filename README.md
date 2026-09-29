@@ -141,3 +141,23 @@ make clean example-01
 Agent Nebula connected examples use a separate PKI profile from the local development CA. Run `make nebula-pki-init` to create `nebula-certs/server.key`, `server.csr`, `client.key`, and `client.csr`. Submit the CSRs through Agent Nebula, then install the approved `server.crt`, `client.crt`, and `trust-bundle.pem` in `nebula-certs/`.
 
 `examples.json` selects `certificate_profile: "nebula"` for Agent Nebula registration/OAuth examples. `make init` copies that profile into `runtime/example-NN/certs/`; standalone examples continue to receive the local `certs/` profile. Application configuration always uses runtime-local `certs/...` paths.
+
+## Environment URLs
+
+All examples use a common external runtime root, and Agent Nebula-integrated examples use two canonical service URLs. Copy the
+checked-in template once and update it for the deployment:
+
+```bash
+cp .env.example .env
+```
+
+```dotenv
+AGENT_NEBULA_EXAMPLES_ROOT=/opt/agent-nebula/examples
+NEBULA_URL=https://YOUR_HOSTNAME:8000
+OAUTH_URL=https://YOUR_HOSTNAME:8092
+```
+
+`AGENT_NEBULA_EXAMPLES_ROOT` is the external root for shared certificates, secrets, and per-example runtime state; child paths are derived from it rather than configured independently. `NEBULA_URL` renders `[nebula] base_url`. `OAUTH_URL` renders both OAuth metadata
+and token endpoints, keeping the RFC 7523 client-assertion audience aligned with
+the authorization server hostname. Shell-exported values override `.env`.
+

@@ -17,7 +17,7 @@ Checked-in templates are immutable inputs. `make init example-01` creates resolv
 
 The examples preserve the SecureAgent/Platform configuration boundary. `secureagent.conf` is generic. Protocol configuration belongs to the protocol. `nebula.conf` is optional and independent. A2A Agent Card data remains part of `a2aserver.conf`; no duplicate `agent-card.json` is introduced.
 
-Secrets never belong in checked-in configuration. Shared non-PKI credentials are stored under `$AGENT_NEBULA_EXAMPLES_ROOT/secrets/`. Local development certificates/keys are stored under `certs/`. Agent Nebula enrollment keys/CSRs and approved certificates/trust are stored separately under `nebula-certs/`.
+Secrets never belong in checked-in configuration. Shared non-PKI credentials are stored under `$AGENT_NEBULA_EXAMPLES_ROOT/secrets/`. OAuth client IDs are runtime DCR state, not secrets: SecureAgent stores them under `runtime/example-NN/data/client-id`. Local development certificates/keys are stored under `certs/`. Agent Nebula enrollment keys/CSRs and approved certificates/trust are stored separately under `nebula-certs/`.
 
 ## Runtime certificate and secret paths
 
