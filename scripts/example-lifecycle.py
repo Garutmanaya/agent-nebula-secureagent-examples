@@ -43,6 +43,7 @@ def paths(example_id: str) -> dict[str, Path]:
         "tmp": runtime / "tmp",
         "shared_certs": root / "certs",
         "shared_secrets": root / "secrets",
+        "nebula_certs": root / "nebula-certs",
         "certs": runtime / "certs",
         "secrets": runtime / "secrets",
     }
@@ -62,7 +63,7 @@ def banner(example_id: str, process: str | None = None) -> None:
 
 def env_init() -> None:
     root = external_root()
-    for name in ("certs", "config", "data", "logs", "secrets", "tmp", "runtime"):
+    for name in ("certs", "nebula-certs", "config", "data", "logs", "secrets", "tmp", "runtime"):
         (root / name).mkdir(parents=True, exist_ok=True)
     (root / "secrets").chmod(0o700)
     print(f"External examples environment: {root}")
@@ -125,6 +126,40 @@ def pki_init() -> None:
     print(f"Shared PKI: {certs}")
 
 
+def nebula_pki_init() -> None:
+    """Create keys and CSRs for manual Agent Nebula certificate enrollment.
+
+    This command never self-signs Agent Nebula identities. Submit the generated
+    CSRs through Agent Nebula, then place the approved certificates and trust
+    bundle back in the same nebula-certs directory.
+    """
+    env_init()
+    require("openssl")
+    root = external_root()
+    certs = root / "nebula-certs"
+    host = os.environ.get("AGENT_NEBULA_EXAMPLE_HOSTNAME", socket.gethostname())
+    sans = "DNS:localhost,IP:127.0.0.1" if host == "localhost" else f"DNS:{host},DNS:localhost,IP:127.0.0.1"
+
+    def enrollment_identity(name: str, san: str) -> None:
+        key = certs / f"{name}.key"
+        csr = certs / f"{name}.csr"
+        private_key(key)
+        if not csr.exists():
+            run_checked(
+                "openssl", "req", "-new", "-sha256",
+                "-key", str(key),
+                "-subj", f"/CN={name}/O=Agent Nebula Examples",
+                "-addext", f"subjectAltName={san}",
+                "-out", str(csr),
+            )
+
+    enrollment_identity("server", sans)
+    enrollment_identity("client", "DNS:client")
+    print(f"Agent Nebula enrollment material: {certs}")
+    print("Submit server.csr and client.csr to Agent Nebula for approval.")
+    print("Install approved server.crt, client.crt, and trust-bundle.pem in the same directory.")
+
+
 def secrets_init() -> None:
     """Create/provision shared non-PKI secrets used by secured examples."""
     env_init()
@@ -185,17 +220,32 @@ def init_one(example_id: str) -> None:
     for key in ("config", "data", "logs", "tmp", "certs", "secrets"):
         p[key].mkdir(parents=True, exist_ok=True)
     p["secrets"].chmod(0o700)
-    # Every runtime gets a private snapshot of the shared environment material.
-    for source_dir, target_dir in ((p["shared_certs"], p["certs"]), (p["shared_secrets"], p["secrets"])):
-        if source_dir.exists():
-            shutil.copytree(source_dir, target_dir, dirs_exist_ok=True)
+    # Every runtime gets a private snapshot of the selected certificate profile
+    # plus the shared non-PKI secrets. Agent Nebula identities never mix with
+    # the self-signed/local development PKI.
+    certificate_profile = item.get("certificate_profile", "local")
+    certificate_source = p["nebula_certs"] if certificate_profile == "nebula" else p["shared_certs"]
+    if certificate_source.exists():
+        shutil.copytree(certificate_source, p["certs"], dirs_exist_ok=True)
+    if p["shared_secrets"].exists():
+        shutil.copytree(p["shared_secrets"], p["secrets"], dirs_exist_ok=True)
     source=REPO/item["directory"]/"config"
     if source.exists():
         for cfg in source.glob("*.conf"):
             (p["config"]/cfg.name).write_text(rewrite_config(cfg.read_text(),p))
     mode=item.get("init_mode","basic")
-    if mode in {"tls", "oauth-nebula", "nebula"} and not (p["certs"] / "server.crt").exists():
-        raise SystemExit("Shared PKI is missing. Run: make pki-init")
+    if certificate_profile == "nebula":
+        required = ("server.crt", "client.crt", "trust-bundle.pem")
+        missing = [name for name in required if not (p["certs"] / name).exists()]
+        if missing:
+            missing_text = ", ".join(missing)
+            raise SystemExit(
+                f"Agent Nebula approved certificate material is missing: {missing_text}. "
+                "Run 'make nebula-pki-init', submit the CSRs to Agent Nebula, "
+                "and install the approved certificates/trust bundle under nebula-certs/."
+            )
+    elif mode in {"tls", "oauth-nebula", "nebula"} and not (p["certs"] / "server.crt").exists():
+        raise SystemExit("Shared local PKI is missing. Run: make pki-init")
     if mode in {"nebula-csr", "oauth-nebula", "nebula"} and not (p["secrets"] / "onboarding-api-key").exists():
         print("WARNING: onboarding-api-key is not present in shared secrets.")
     if mode == "oauth-nebula" and not (p["secrets"] / "oauth-auth.key").exists():
@@ -243,11 +293,12 @@ def list_examples() -> None:
 
 
 def main() -> None:
-    if len(sys.argv)<2: raise SystemExit("Usage: example-lifecycle.py <list|env-init|pki-init|secrets-init|init|run|clean> ...")
+    if len(sys.argv)<2: raise SystemExit("Usage: example-lifecycle.py <list|env-init|pki-init|nebula-pki-init|secrets-init|init|run|clean> ...")
     command=sys.argv[1]
     if command=="list": list_examples()
     elif command=="env-init": env_init()
     elif command=="pki-init": pki_init()
+    elif command=="nebula-pki-init": nebula_pki_init()
     elif command=="secrets-init": secrets_init()
     elif command=="init" and len(sys.argv)==3: init_examples(sys.argv[2])
     elif command=="clean" and len(sys.argv)==3: clean_examples(sys.argv[2])

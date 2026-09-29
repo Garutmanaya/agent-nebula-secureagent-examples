@@ -45,7 +45,7 @@ All lifecycle commands run from the repository root. Example source stays in the
 
 ```bash
 make install
-export AGENT_NEBULA_EXAMPLES_ROOT=/opt/nebula/examples   # optional; this is the default
+export AGENT_NEBULA_EXAMPLES_ROOT=/opt/agent-nebula/examples   # optional; this is the default
 make env-init
 make list
 make init example-01
@@ -68,11 +68,12 @@ Certificates and secrets are intentionally preserved by `clean`.
 
 ## External environment contract
 
-`AGENT_NEBULA_EXAMPLES_ROOT` selects the external environment root and defaults to `/opt/nebula/examples`. `make env-init` creates the durable top-level filesystem without overwriting existing operator-provided material:
+`AGENT_NEBULA_EXAMPLES_ROOT` selects the external environment root and defaults to `/opt/agent-nebula/examples`. `make env-init` creates the durable top-level filesystem without overwriting existing operator-provided material:
 
 ```text
-/opt/nebula/examples/
-├── certs/
+/opt/agent-nebula/examples/
+├── certs/                 # local development PKI
+├── nebula-certs/          # Agent Nebula enrollment/approved PKI
 ├── config/
 ├── data/
 ├── logs/
@@ -86,7 +87,7 @@ Certificates and secrets are intentionally preserved by `clean`.
         └── tmp/
 ```
 
-Example-specific certificate and secret material is stored below `certs/example-NN/` and `secrets/example-NN/`. The runtime tree is disposable; credentials and certificates are not.
+`certs/` contains the shared local development PKI created by `make pki-init`. `nebula-certs/` contains Agent Nebula enrollment keys/CSRs and the certificates/trust bundle approved by Agent Nebula. `secrets/` contains shared non-PKI credentials. The runtime tree is disposable; these durable sources are not.
 
 ## Configuration boundaries
 
@@ -124,7 +125,8 @@ Example source code and checked-in configuration templates stay in this reposito
 
 ```bash
 make env-init
-make pki-init
+make pki-init              # standalone/local TLS examples
+make nebula-pki-init       # generate Agent Nebula enrollment keys + CSRs
 make secrets-init       # secured examples; imports supported values from environment
 make init example-01
 make run example-01 server
@@ -133,3 +135,9 @@ make clean example-01
 ```
 
 `make pki-init` creates one development CA plus shared server/client certificates and keys under `certs/`. Every `make init example-NN` copies the current shared `certs/` and `secrets/` contents into that example's disposable `runtime/example-NN/` tree. `make clean` removes only the example runtime snapshot and never removes shared certificates or secrets.
+
+## Agent Nebula certificate profile
+
+Agent Nebula connected examples use a separate PKI profile from the local development CA. Run `make nebula-pki-init` to create `nebula-certs/server.key`, `server.csr`, `client.key`, and `client.csr`. Submit the CSRs through Agent Nebula, then install the approved `server.crt`, `client.crt`, and `trust-bundle.pem` in `nebula-certs/`.
+
+`examples.json` selects `certificate_profile: "nebula"` for Agent Nebula registration/OAuth examples. `make init` copies that profile into `runtime/example-NN/certs/`; standalone examples continue to receive the local `certs/` profile. Application configuration always uses runtime-local `certs/...` paths.

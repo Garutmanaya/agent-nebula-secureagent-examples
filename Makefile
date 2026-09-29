@@ -1,4 +1,4 @@
-.PHONY: install lint list env-init pki-init secrets-init init run clean help server client provider orchestrator
+.PHONY: install lint list env-init pki-init nebula-pki-init secrets-init init run clean help server client provider orchestrator
 
 EXAMPLE := $(word 2,$(MAKECMDGOALS))
 PROCESS := $(word 3,$(MAKECMDGOALS))
@@ -12,7 +12,8 @@ lint:
 help:
 	@echo "Agent Nebula SecureAgent examples"
 	@echo "  make env-init"
-	@echo "  make pki-init"
+	@echo "  make pki-init              # local development PKI"
+	@echo "  make nebula-pki-init       # Agent Nebula enrollment keys + CSRs"
 	@echo "  make secrets-init"
 	@echo "  make list"
 	@echo "  make init example-01"
@@ -30,6 +31,9 @@ env-init:
 
 pki-init:
 	@./scripts/example-lifecycle.py pki-init
+
+nebula-pki-init:
+	@./scripts/example-lifecycle.py nebula-pki-init
 
 secrets-init:
 	@./scripts/example-lifecycle.py secrets-init

@@ -7,7 +7,8 @@
     "processes": {
       "server": "main.py",
       "client": "client.py"
-    }
+    },
+    "certificate_profile": "local"
   },
   "example-02": {
     "directory": "examples/02-a2a-multiskill",
@@ -17,7 +18,8 @@
     "processes": {
       "server": "main.py",
       "client": "client.py"
-    }
+    },
+    "certificate_profile": "local"
   },
   "example-03": {
     "directory": "examples/03-a2a-multi-binding",
@@ -27,7 +29,8 @@
     "processes": {
       "server": "main.py",
       "client": "client.py"
-    }
+    },
+    "certificate_profile": "local"
   },
   "example-04": {
     "directory": "examples/04-a2a-https",
@@ -37,7 +40,8 @@
     "processes": {
       "server": "main.py",
       "client": "client.py"
-    }
+    },
+    "certificate_profile": "local"
   },
   "example-05": {
     "directory": "examples/05-a2a-multi-binding-tls",
@@ -47,7 +51,8 @@
     "processes": {
       "server": "main.py",
       "client": "client.py"
-    }
+    },
+    "certificate_profile": "local"
   },
   "example-06": {
     "directory": "examples/06-nebula-registration-discovery",
@@ -57,7 +62,8 @@
     "processes": {
       "server": "main.py",
       "client": "client.py"
-    }
+    },
+    "certificate_profile": "nebula"
   },
   "example-07": {
     "directory": "examples/07-nebula-oauth",
@@ -67,7 +73,8 @@
     "processes": {
       "server": "main.py",
       "client": "client.py"
-    }
+    },
+    "certificate_profile": "nebula"
   },
   "example-08": {
     "directory": "examples/08-nebula-skill-oauth",
@@ -77,7 +84,8 @@
     "processes": {
       "server": "main.py",
       "client": "client.py"
-    }
+    },
+    "certificate_profile": "nebula"
   },
   "example-09": {
     "directory": "examples/09-nebula-agent-to-agent",
@@ -88,14 +96,16 @@
       "provider": "provider.py",
       "orchestrator": "orchestrator.py",
       "client": "client.py"
-    }
+    },
+    "certificate_profile": "nebula"
   },
   "example-10": {
     "directory": "examples/10-a2a-api-key",
     "name": "API-Key Protected Agent",
     "description": "Reserved for API-key endpoint security; the required Platform verifier configuration boundary is not yet available.",
     "init_mode": "planned",
-    "processes": {}
+    "processes": {},
+    "certificate_profile": "nebula"
   },
   "example-11": {
     "directory": "examples/11-a2a-a2ui",
@@ -105,7 +115,8 @@
     "processes": {
       "server": "main.py",
       "client": "client.py"
-    }
+    },
+    "certificate_profile": "local"
   },
   "example-12": {
     "directory": "examples/12-a2a-a2ui-actions",
@@ -115,6 +126,7 @@
     "processes": {
       "server": "main.py",
       "client": "client.py"
-    }
+    },
+    "certificate_profile": "local"
   }
 }
