@@ -8,13 +8,22 @@ from typing import Any
 
 from examples.example_paths import config_path
 
-from agent_nebula_secureagent import SecureAgent
+from agent_nebula_secureagent import DiscoveredAgent, SecureAgent
 
 HERE = Path(__file__).resolve().parent
 SERVER_URL = "http://localhost:9011/"
 A2UI_EXTENSION_URI = "https://a2ui.org/a2a-extension/a2ui/v1.0"
 A2UI_MIME_TYPE = "application/a2ui+json"
 
+
+
+def _direct_provider(agent_card: dict, agent_card_url: str) -> DiscoveredAgent:
+    """Adapt direct Agent Card discovery to the current SecureAgent invocation API."""
+    return DiscoveredAgent(
+        agent_id=str(agent_card.get("name") or agent_card_url),
+        display_name=str(agent_card.get("name") or agent_card_url),
+        agent_card_url=agent_card_url,
+    )
 
 def _find_parts(value: Any) -> list[Mapping[str, Any]]:
     """Return normalized A2A parts without depending on A2A SDK wire models."""
@@ -141,16 +150,17 @@ async def main() -> None:
     try:
         card = await agent.resolve_agent_card(SERVER_URL)
         _assert_agent_card(card)
+        provider = _direct_provider(card, SERVER_URL)
 
-        forecast = await agent.send_message_to(
-            SERVER_URL,
+        forecast = await agent.send_message(
+            provider,
             data={"region": "east"},
             skill_id="forecast",
         )
         _assert_forecast(forecast)
 
-        summary = await agent.send_message_to(
-            SERVER_URL,
+        summary = await agent.send_message(
+            provider,
             data={},
             skill_id="summary",
         )

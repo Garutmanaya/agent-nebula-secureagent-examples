@@ -6,7 +6,7 @@ from pathlib import Path
 
 from examples.example_paths import config_path
 
-from agent_nebula_secureagent import SecureAgent
+from agent_nebula_secureagent import DiscoveredAgent, SecureAgent
 
 HERE = Path(__file__).resolve().parent
 SERVER_URL = "http://localhost:9003/"
@@ -21,6 +21,15 @@ SKILL_CASES = (
     ("echo", {"value": "multi-skill"}, "echo=multi-skill"),
     ("add", {"a": 7, "b": 5}, "sum=12"),
 )
+
+
+def _direct_provider(agent_card: dict, agent_card_url: str) -> DiscoveredAgent:
+    """Adapt direct Agent Card discovery to the current SecureAgent invocation API."""
+    return DiscoveredAgent(
+        agent_id=str(agent_card.get("name") or agent_card_url),
+        display_name=str(agent_card.get("name") or agent_card_url),
+        agent_card_url=agent_card_url,
+    )
 
 
 def _response_text(responses: tuple[dict[str, object], ...]) -> str:
@@ -39,12 +48,12 @@ def _response_text(responses: tuple[dict[str, object], ...]) -> str:
     return text
 
 
-async def _test_all_skills(agent: SecureAgent, server_url: str, label: str) -> int:
+async def _test_all_skills(agent: SecureAgent, provider: DiscoveredAgent, label: str) -> int:
     """Invoke and validate every skill advertised by this example."""
     passed = 0
     for skill_id, data, expected in SKILL_CASES:
-        responses = await agent.send_message_to(
-            server_url,
+        responses = await agent.send_message(
+            provider,
             data=data,
             skill_id=skill_id,
         )
@@ -58,13 +67,13 @@ async def _test_all_skills(agent: SecureAgent, server_url: str, label: str) -> i
     return passed
 
 
-async def _test_binding(label: str, config_name: str) -> int:
+async def _test_binding(label: str, config_name: str, provider: DiscoveredAgent) -> int:
     # A separate client instance forces the official A2A client to negotiate only
     # the binding under test instead of falling back to another advertised interface.
     agent = SecureAgent(config=config_path(HERE, "secureagent.conf"))
-    agent.use_protocol("a2a", role="client", config=HERE / config_name)
+    agent.use_protocol("a2a", role="client", config=config_path(HERE, config_name))
     try:
-        return await _test_all_skills(agent, SERVER_URL, label)
+        return await _test_all_skills(agent, provider, label)
     finally:
         await agent.close()
 
@@ -92,10 +101,11 @@ async def main() -> None:
         raise AssertionError(f"unexpected bindings: {sorted(advertised_bindings)}")
     print(f"PASS  Agent Card bindings: {', '.join(sorted(advertised_bindings))}")
 
+    provider = _direct_provider(card, SERVER_URL)
     passed = 0
     for label, config_name, _ in BINDINGS:
         print(f"Testing {label}")
-        passed += await _test_binding(label, config_name)
+        passed += await _test_binding(label, config_name, provider)
 
     total = len(BINDINGS) * len(SKILL_CASES)
     print(f"RESULT: {passed}/{total} binding/skill invocations passed")

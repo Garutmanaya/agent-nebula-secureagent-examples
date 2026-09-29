@@ -61,7 +61,7 @@ async def main() -> None:
     )
     agent.use_protocol("a2a", role="client", config=config_path(HERE, "a2aclient.conf"))
     try:
-        initial = await agent.send_message_to(SERVER_URL, data={}, skill_id="forecast")
+        initial = await agent.send_message_to(SERVER_URL, data={})
         if _business_units(initial) != 1250:
             raise AssertionError(f"initial forecast missing: {initial}")
         if not any("createSurface" in document for document in _a2ui_documents(initial)):
@@ -77,7 +77,6 @@ async def main() -> None:
             data_model={"units": 1250},
             want_response=True,
             action_id="recalculate-1",
-            skill_id="forecast",
         )
         if _business_units(updated) != 1300:
             raise AssertionError(f"recalculated business result missing: {updated}")

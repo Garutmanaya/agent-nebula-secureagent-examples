@@ -31,7 +31,6 @@ async def main() -> None:
     responses = await agent.send_message_to(
         SERVER_URL,
         data={"name": "Agent Nebula"},
-        skill_id="hello",
     )
     for response in responses:
         print(response)

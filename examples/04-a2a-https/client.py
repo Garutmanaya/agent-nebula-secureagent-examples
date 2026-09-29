@@ -6,7 +6,7 @@ from pathlib import Path
 
 from examples.example_paths import config_path
 
-from agent_nebula_secureagent import SecureAgent
+from agent_nebula_secureagent import DiscoveredAgent, SecureAgent
 
 HERE = Path(__file__).resolve().parent
 SERVER_URL = "https://localhost:9004/"
@@ -16,6 +16,15 @@ SKILL_CASES = (
     ("echo", {"value": "multi-skill"}, "echo=multi-skill"),
     ("add", {"a": 7, "b": 5}, "sum=12"),
 )
+
+
+def _direct_provider(agent_card: dict, agent_card_url: str) -> DiscoveredAgent:
+    """Adapt direct Agent Card discovery to the current SecureAgent invocation API."""
+    return DiscoveredAgent(
+        agent_id=str(agent_card.get("name") or agent_card_url),
+        display_name=str(agent_card.get("name") or agent_card_url),
+        agent_card_url=agent_card_url,
+    )
 
 
 def _response_text(responses: tuple[dict[str, object], ...]) -> str:
@@ -34,12 +43,12 @@ def _response_text(responses: tuple[dict[str, object], ...]) -> str:
     return text
 
 
-async def _test_all_skills(agent: SecureAgent, server_url: str, label: str) -> int:
+async def _test_all_skills(agent: SecureAgent, provider: DiscoveredAgent, label: str) -> int:
     """Invoke and validate every skill advertised by this example."""
     passed = 0
     for skill_id, data, expected in SKILL_CASES:
-        responses = await agent.send_message_to(
-            server_url,
+        responses = await agent.send_message(
+            provider,
             data=data,
             skill_id=skill_id,
         )
@@ -65,7 +74,8 @@ async def main() -> None:
         ):
             raise AssertionError("Agent Card must advertise HTTPS interfaces only")
         print("PASS  Agent Card advertises HTTPS")
-        passed = await _test_all_skills(agent, SERVER_URL, "HTTPS")
+        provider = _direct_provider(card, SERVER_URL)
+        passed = await _test_all_skills(agent, provider, "HTTPS")
         print(f"RESULT: {passed}/{len(SKILL_CASES)} HTTPS skill invocations passed")
     finally:
         await agent.close()

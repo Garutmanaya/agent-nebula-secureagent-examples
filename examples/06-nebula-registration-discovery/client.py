@@ -115,10 +115,10 @@ async def main():
             if isinstance(skill, dict) and isinstance(skill.get("id"), str)
         }
 
-        # Step 3: Invoke the discovered provider using the same direct A2A
-        # invocation path exercised by the previous examples. Registry
-        # discovery supplies the Agent Card location; the Agent Card supplies
-        # the authoritative A2A interfaces and skills.
+        # Step 3: Invoke the discovered provider through SecureAgent. The
+        # selected skill is carried by the Agent Nebula skill-selection
+        # extension while Platform resolves the authoritative Agent Card
+        # interface and security requirements.
         for skill_id, data, expected in SKILL_CASES:
             if skill_id not in advertised_skills:
                 raise AssertionError(
@@ -126,8 +126,8 @@ async def main():
                 )
 
             actual = response_text(
-                await agent.send_message_to(
-                    provider_base_url,
+                await agent.send_message(
+                    provider,
                     data=data,
                     skill_id=skill_id,
                 )
