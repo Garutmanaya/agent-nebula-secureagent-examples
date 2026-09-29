@@ -117,3 +117,19 @@ scripts/           Shared external environment and lifecycle implementation
 5. Security verification is never disabled to make an example pass.
 6. Externally issued credentials are provisioned rather than fabricated.
 7. Historical experiments stay in `examples-legacy/`; they do not expand the supported suite.
+
+### Shared external environment
+
+Example source code and checked-in configuration templates stay in this repository. Runtime state, certificates, and secrets live under `AGENT_NEBULA_EXAMPLES_ROOT` (default `/opt/agent-nebula/examples`).
+
+```bash
+make env-init
+make pki-init
+make secrets-init       # secured examples; imports supported values from environment
+make init example-01
+make run example-01 server
+make run example-01 client
+make clean example-01
+```
+
+`make pki-init` creates one development CA plus shared server/client certificates and keys under `certs/`. Every `make init example-NN` copies the current shared `certs/` and `secrets/` contents into that example's disposable `runtime/example-NN/` tree. `make clean` removes only the example runtime snapshot and never removes shared certificates or secrets.

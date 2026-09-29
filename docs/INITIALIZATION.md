@@ -48,3 +48,19 @@ make init all
 ```
 
 This initializes every catalog entry. Reserved/planned examples create their external runtime boundary but do not fabricate unsupported protocol/security material.
+
+## Shared PKI and secrets
+
+The external environment uses one shared PKI and one shared secrets directory for all examples. Do not create per-example directories under top-level `certs/` or `secrets/`.
+
+```bash
+export AGENT_NEBULA_EXAMPLES_ROOT=/opt/agent-nebula/examples
+make env-init
+make pki-init
+make secrets-init
+make init example-01
+```
+
+`pki-init` creates `ca.crt`, `ca.key`, `server.crt`, `server.key`, `client.crt`, `client.key`, and `trust-bundle.pem` under the shared `certs/` directory. `init` copies shared certificate and secret material into `runtime/example-NN/certs/` and `runtime/example-NN/secrets/`. Runtime cleanup does not modify the shared material.
+
+For Agent Nebula connected examples, place the Agent Nebula trust certificate at `certs/agent-nebula-ca.crt`. `secrets-init` can provision `onboarding-api-key` from `NEBULA_ONBOARDING_API_KEY` and `oauth-client-id` from `NEBULA_OAUTH_CLIENT_ID`; it also creates the shared OAuth authentication and DPoP development keys when absent.

@@ -53,7 +53,7 @@
     "directory": "examples/06-nebula-registration-discovery",
     "name": "Agent Nebula Registration & Discovery",
     "description": "Agent Nebula provider registration, Registry discovery, and invocation through the discovered A2A Agent Card.",
-    "init_mode": "nebula-csr",
+    "init_mode": "nebula",
     "processes": {
       "server": "main.py",
       "client": "client.py"

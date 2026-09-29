@@ -54,10 +54,6 @@ async def _test_all_skills(agent: SecureAgent, server_url: str, label: str) -> i
 
 
 async def main() -> None:
-    trust_bundle = HERE / "trust/local-ca.crt"
-    if not trust_bundle.is_file():
-        raise RuntimeError("missing local CA; run `make init` before the client")
-
     agent = SecureAgent(config=config_path(HERE, "secureagent.conf"))
     agent.use_protocol("a2a", role="client", config=config_path(HERE, "a2aclient.conf"))
     try:

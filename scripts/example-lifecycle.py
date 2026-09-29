@@ -41,8 +41,10 @@ def paths(example_id: str) -> dict[str, Path]:
         "data": runtime / "data",
         "logs": runtime / "logs",
         "tmp": runtime / "tmp",
-        "certs": root / "certs" / example_id,
-        "secrets": root / "secrets" / example_id,
+        "shared_certs": root / "certs",
+        "shared_secrets": root / "secrets",
+        "certs": runtime / "certs",
+        "secrets": runtime / "secrets",
     }
 
 
@@ -87,37 +89,51 @@ def private_key(path: Path, *, ec: bool = False) -> None:
     path.chmod(0o600)
 
 
-def local_tls(example_id: str, p: dict[str, Path]) -> None:
+def pki_init() -> None:
+    """Create one shared development PKI used by every TLS example."""
+    env_init()
     require("openssl")
-    ca_key = p["secrets"] / "local-ca.key"
-    ca_cert = p["certs"] / "local-ca.crt"
-    server_key = p["secrets"] / "server.key"
-    server_cert = p["certs"] / "server.crt"
-    csr = p["tmp"] / "server.csr"
-    ext = p["tmp"] / "server.ext"
+    root = external_root()
+    certs = root / "certs"
+    ca_key = certs / "ca.key"
+    ca_cert = certs / "ca.crt"
+    server_key = certs / "server.key"
+    server_cert = certs / "server.crt"
+    client_key = certs / "client.key"
+    client_cert = certs / "client.crt"
+    trust_bundle = certs / "trust-bundle.pem"
     host = os.environ.get("AGENT_NEBULA_EXAMPLE_HOSTNAME", socket.gethostname())
     sans = "DNS:localhost,IP:127.0.0.1" if host == "localhost" else f"DNS:{host},DNS:localhost,IP:127.0.0.1"
-    if not ca_cert.exists():
-        run_checked("openssl", "req", "-x509", "-newkey", "rsa:3072", "-sha256", "-days", "30", "-nodes", "-subj", "/CN=Agent Nebula Examples Local CA", "-keyout", str(ca_key), "-out", str(ca_cert))
+
+    if not ca_key.exists() or not ca_cert.exists():
+        run_checked("openssl", "req", "-x509", "-newkey", "rsa:3072", "-sha256", "-days", "365", "-nodes", "-subj", "/CN=Agent Nebula Examples Local CA", "-keyout", str(ca_key), "-out", str(ca_cert))
         ca_key.chmod(0o600)
-    private_key(server_key)
-    if not server_cert.exists():
-        run_checked("openssl", "req", "-new", "-sha256", "-key", str(server_key), "-subj", f"/CN={host}/O=Agent Nebula Examples/OU={example_id}", "-addext", f"subjectAltName={sans}", "-out", str(csr))
-        ext.write_text(f"subjectAltName={sans}\nextendedKeyUsage=serverAuth\n")
-        run_checked("openssl", "x509", "-req", "-sha256", "-days", "30", "-in", str(csr), "-CA", str(ca_cert), "-CAkey", str(ca_key), "-CAcreateserial", "-extfile", str(ext), "-out", str(server_cert))
+
+    def signed_identity(name: str, key: Path, cert: Path, eku: str, san: str) -> None:
+        if key.exists() and cert.exists():
+            return
+        private_key(key)
+        csr = root / "tmp" / f"{name}.csr"
+        ext = root / "tmp" / f"{name}.ext"
+        run_checked("openssl", "req", "-new", "-sha256", "-key", str(key), "-subj", f"/CN={name}/O=Agent Nebula Examples", "-addext", f"subjectAltName={san}", "-out", str(csr))
+        ext.write_text(f"subjectAltName={san}\nextendedKeyUsage={eku}\n")
+        run_checked("openssl", "x509", "-req", "-sha256", "-days", "365", "-in", str(csr), "-CA", str(ca_cert), "-CAkey", str(ca_key), "-CAcreateserial", "-extfile", str(ext), "-out", str(cert))
+
+    signed_identity("server", server_key, server_cert, "serverAuth", sans)
+    signed_identity("client", client_key, client_cert, "clientAuth", "DNS:client")
+    shutil.copy2(ca_cert, trust_bundle)
+    print(f"Shared PKI: {certs}")
 
 
-def nebula_csr(example_id: str, p: dict[str, Path]) -> None:
-    require("openssl")
-    key = p["secrets"] / "server.key"
-    csr = p["tmp"] / "server.csr"
-    host = os.environ.get("AGENT_NEBULA_EXAMPLE_HOSTNAME", socket.gethostname())
-    sans = "DNS:localhost,IP:127.0.0.1" if host == "localhost" else f"DNS:{host},DNS:localhost,IP:127.0.0.1"
-    private_key(key)
-    if not csr.exists():
-        run_checked("openssl", "req", "-new", "-sha256", "-key", str(key), "-subj", f"/CN={host}/O=Agent Nebula Examples/OU={example_id}", "-addext", f"subjectAltName={sans}", "-out", str(csr))
-    print(f"CSR: {csr}")
-    print(f"Private key: {key}")
+def secrets_init() -> None:
+    """Create/provision shared non-PKI secrets used by secured examples."""
+    env_init()
+    secrets = external_root() / "secrets"
+    private_key(secrets / "oauth-auth.key", ec=True)
+    private_key(secrets / "dpop.key", ec=True)
+    provision_env_secret("NEBULA_ONBOARDING_API_KEY", secrets / "onboarding-api-key")
+    provision_env_secret("NEBULA_OAUTH_CLIENT_ID", secrets / "oauth-client-id")
+    print(f"Shared secrets: {secrets}")
 
 
 def provision_env_secret(env_name: str, target: Path) -> None:
@@ -130,17 +146,26 @@ def provision_env_secret(env_name: str, target: Path) -> None:
 def rewrite_config(text: str, p: dict[str, Path]) -> str:
     replacements = {
         ".runtime/trust/agent-nebula-ca.crt": str(p["certs"] / "agent-nebula-ca.crt"),
-        ".runtime/trust/local-ca.crt": str(p["certs"] / "local-ca.crt"),
+        ".runtime/trust/local-ca.crt": str(p["certs"] / "trust-bundle.pem"),
         "trust/agent-nebula-ca.crt": str(p["certs"] / "agent-nebula-ca.crt"),
-        "trust/local-ca.crt": str(p["certs"] / "local-ca.crt"),
+        "certs/agent-nebula-ca.crt": str(p["certs"] / "agent-nebula-ca.crt"),
+        "trust/local-ca.crt": str(p["certs"] / "trust-bundle.pem"),
+        "certs/trust-bundle.pem": str(p["certs"] / "trust-bundle.pem"),
         ".runtime/certs/server.crt": str(p["certs"] / "server.crt"),
         "certs/server.crt": str(p["certs"] / "server.crt"),
-        ".runtime/secrets/server.key": str(p["secrets"] / "server.key"),
-        "secrets/server.key": str(p["secrets"] / "server.key"),
+        "certs/client.crt": str(p["certs"] / "client.crt"),
+        ".runtime/secrets/server.key": str(p["certs"] / "server.key"),
+        "secrets/server.key": str(p["certs"] / "server.key"),
+        "certs/server.key": str(p["certs"] / "server.key"),
+        "certs/client.key": str(p["certs"] / "client.key"),
         ".runtime/secrets/onboarding-api-key": str(p["secrets"] / "onboarding-api-key"),
+        "secrets/onboarding-api-key": str(p["secrets"] / "onboarding-api-key"),
         ".runtime/secrets/oauth-client-id": str(p["secrets"] / "oauth-client-id"),
+        "secrets/oauth-client-id": str(p["secrets"] / "oauth-client-id"),
         ".runtime/secrets/oauth-auth.key": str(p["secrets"] / "oauth-auth.key"),
+        "secrets/oauth-auth.key": str(p["secrets"] / "oauth-auth.key"),
         ".runtime/secrets/dpop.key": str(p["secrets"] / "dpop.key"),
+        "secrets/dpop.key": str(p["secrets"] / "dpop.key"),
     }
     for old, new in replacements.items():
         text = text.replace(old, new)
@@ -157,27 +182,25 @@ def init_one(example_id: str) -> None:
     item=entry(example_id); p=paths(example_id); env_init(); banner(example_id)
     if p["runtime"].exists():
         shutil.rmtree(p["runtime"])
-    for key in ("config","data","logs","tmp","certs","secrets"):
+    for key in ("config", "data", "logs", "tmp", "certs", "secrets"):
         p[key].mkdir(parents=True, exist_ok=True)
     p["secrets"].chmod(0o700)
+    # Every runtime gets a private snapshot of the shared environment material.
+    for source_dir, target_dir in ((p["shared_certs"], p["certs"]), (p["shared_secrets"], p["secrets"])):
+        if source_dir.exists():
+            shutil.copytree(source_dir, target_dir, dirs_exist_ok=True)
     source=REPO/item["directory"]/"config"
     if source.exists():
         for cfg in source.glob("*.conf"):
             (p["config"]/cfg.name).write_text(rewrite_config(cfg.read_text(),p))
     mode=item.get("init_mode","basic")
-    if mode == "tls": local_tls(example_id,p)
-    elif mode == "nebula-csr":
-        nebula_csr(example_id,p)
-        provision_env_secret("NEBULA_ONBOARDING_API_KEY",p["secrets"]/"onboarding-api-key")
-    elif mode == "oauth-nebula":
-        local_tls(example_id,p)
-        private_key(p["secrets"]/"oauth-auth.key",ec=True)
-        private_key(p["secrets"]/"dpop.key",ec=True)
-        provision_env_secret("NEBULA_ONBOARDING_API_KEY",p["secrets"]/"onboarding-api-key")
-    elif mode == "nebula":
-        local_tls(example_id,p)
-        provision_env_secret("NEBULA_ONBOARDING_API_KEY",p["secrets"]/"onboarding-api-key")
-    elif mode == "planned":
+    if mode in {"tls", "oauth-nebula", "nebula"} and not (p["certs"] / "server.crt").exists():
+        raise SystemExit("Shared PKI is missing. Run: make pki-init")
+    if mode in {"nebula-csr", "oauth-nebula", "nebula"} and not (p["secrets"] / "onboarding-api-key").exists():
+        print("WARNING: onboarding-api-key is not present in shared secrets.")
+    if mode == "oauth-nebula" and not (p["secrets"] / "oauth-auth.key").exists():
+        raise SystemExit("Shared OAuth secrets are missing. Run: make secrets-init")
+    if mode == "planned":
         print("This example is reserved and has no runnable process yet.")
     print(f"Runtime: {p['runtime']}")
     print(f"Config : {p['config']}")
@@ -193,7 +216,7 @@ def clean_one(example_id: str) -> None:
     entry(example_id); banner(example_id); p=paths(example_id)
     shutil.rmtree(p["runtime"],ignore_errors=True)
     print(f"Removed runtime: {p['runtime']}")
-    print("External certs and secrets were preserved.")
+    print("Shared certs and secrets were preserved.")
 
 
 def clean_examples(selector: str) -> None:
@@ -220,10 +243,12 @@ def list_examples() -> None:
 
 
 def main() -> None:
-    if len(sys.argv)<2: raise SystemExit("Usage: example-lifecycle.py <list|env-init|init|run|clean> ...")
+    if len(sys.argv)<2: raise SystemExit("Usage: example-lifecycle.py <list|env-init|pki-init|secrets-init|init|run|clean> ...")
     command=sys.argv[1]
     if command=="list": list_examples()
     elif command=="env-init": env_init()
+    elif command=="pki-init": pki_init()
+    elif command=="secrets-init": secrets_init()
     elif command=="init" and len(sys.argv)==3: init_examples(sys.argv[2])
     elif command=="clean" and len(sys.argv)==3: clean_examples(sys.argv[2])
     elif command=="run" and len(sys.argv)==4: run_example(sys.argv[2],sys.argv[3])
