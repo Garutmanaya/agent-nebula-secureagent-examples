@@ -13,14 +13,14 @@ provider -> actionResponse + updateDataModel -> client
 Run:
 
 ```bash
-make init
-make run server
+make init example-12
+make run example-12 server
 ```
 
 In another terminal:
 
 ```bash
-make run client
+make run example-12 client
 ```
 
 Expected result:

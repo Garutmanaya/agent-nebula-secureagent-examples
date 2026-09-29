@@ -13,14 +13,14 @@ The complete matrix is nine invocations: `{JSON-RPC, HTTP+JSON, gRPC} × {hello,
 ## Run
 
 ```bash
-make init
-make run server
+make init example-03
+make run example-03 server
 ```
 
 In another terminal:
 
 ```bash
-make run client
+make run example-03 client
 ```
 
 HTTP-hosted Agent Card discovery and A2A routes use port `9003`; the gRPC A2A listener uses `localhost:50053`. The Platform installation must include its A2A gRPC dependency/extra.
@@ -32,5 +32,5 @@ There are no JSON-RPC-specific, HTTP+JSON-specific, or gRPC-specific skill handl
 ## Cleanup
 
 ```bash
-make clean
+make clean example-03
 ```

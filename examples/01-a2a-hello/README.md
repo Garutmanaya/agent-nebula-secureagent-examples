@@ -18,8 +18,8 @@ explicitly selects `hello` when sending its message.
 Server:
 
 ```python
-agent = SecureAgent(config=HERE / "secureagent.conf")
-agent.use_protocol("a2a", role="server", config=HERE / "a2aserver.conf")
+agent = SecureAgent(config=HERE / "config/secureagent.conf")
+agent.use_protocol("a2a", role="server", config=HERE / "config/a2aserver.conf")
 
 @agent.skill("hello")
 async def hello(payload):
@@ -29,8 +29,8 @@ async def hello(payload):
 Client:
 
 ```python
-agent = SecureAgent(config=HERE / "secureagent.conf")
-agent.use_protocol("a2a", role="client", config=HERE / "a2aclient.conf")
+agent = SecureAgent(config=HERE / "config/secureagent.conf")
+agent.use_protocol("a2a", role="client", config=HERE / "config/a2aclient.conf")
 
 card = await agent.resolve_agent_card("http://localhost:9001/")
 responses = await agent.send_message_to(
@@ -48,9 +48,9 @@ security integration, and the Agent Nebula skill-selection extension.
 
 - `main.py` — A2A server and `hello` skill.
 - `client.py` — A2A client invocation.
-- `secureagent.conf` — shared application/runtime configuration.
-- `a2aserver.conf` — server and Agent Card configuration.
-- `a2aclient.conf` — client transport configuration.
+- `config/secureagent.conf` — shared application/runtime configuration.
+- `config/a2aserver.conf` — server and Agent Card configuration.
+- `config/a2aclient.conf` — client transport configuration.
 - `Makefile` — initialization, server/client execution, and cleanup.
 
 ## Prerequisites
@@ -60,7 +60,7 @@ Python 3.12+, uv, and the sibling `agent-nebula-secureagent` repository.
 ## Initialize
 
 ```bash
-make init
+make init example-01
 ```
 
 This introductory HTTP example does not require certificates, OAuth credentials, or
@@ -72,13 +72,13 @@ paths used by SecureAgent.
 Start the server in one terminal:
 
 ```bash
-make run server
+make run example-01 server
 ```
 
 Then invoke it from another terminal:
 
 ```bash
-make run client
+make run example-01 client
 ```
 
 The server listens on `http://localhost:9001/`. The client first resolves the Agent
@@ -86,8 +86,8 @@ Card and then sends a data message with `skill_id="hello"`.
 
 ## Configuration
 
-`a2aserver.conf` advertises JSON-RPC at `http://localhost:9001/` and the `hello`
-skill. `a2aclient.conf` enables JSON-RPC and JSON output for the matching local client.
+`config/a2aserver.conf` advertises JSON-RPC at `http://localhost:9001/` and the `hello`
+skill. `config/a2aclient.conf` enables JSON-RPC and JSON output for the matching local client.
 
 No configuration externalization is demonstrated in this example.
 
@@ -100,7 +100,7 @@ to their dedicated examples.
 ## Cleanup
 
 ```bash
-make clean
+make clean example-01
 ```
 
 ## Related examples

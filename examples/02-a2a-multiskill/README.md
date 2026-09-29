@@ -8,29 +8,29 @@ This example is the baseline for subsequent examples: multi-skill behavior is tr
 
 ## Test coverage
 
-`make run client` fails with a non-zero exit if the Agent Card is incomplete, skill selection is incorrect, or any response differs from the expected result. It tests `JSON-RPC × {hello, echo, add}`.
+`make run example-02 client` fails with a non-zero exit if the Agent Card is incomplete, skill selection is incorrect, or any response differs from the expected result. It tests `JSON-RPC × {hello, echo, add}`.
 
 ## Run
 
 ```bash
-make init
-make run server
+make init example-02
+make run example-02 server
 ```
 
 In another terminal:
 
 ```bash
-make run client
+make run example-02 client
 ```
 
 The server listens on `http://localhost:9002/`. No TLS or application authentication is used yet.
 
 ## Files
 
-`main.py` contains the three business handlers. `client.py` is the executable verification client. `a2aserver.conf` publishes the Agent Card and JSON-RPC interface; `a2aclient.conf` selects JSON-RPC.
+`main.py` contains the three business handlers. `client.py` is the executable verification client. `config/a2aserver.conf` publishes the Agent Card and JSON-RPC interface; `config/a2aclient.conf` selects JSON-RPC.
 
 ## Cleanup
 
 ```bash
-make clean
+make clean example-02
 ```

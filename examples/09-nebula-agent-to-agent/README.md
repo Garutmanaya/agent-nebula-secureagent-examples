@@ -4,4 +4,4 @@ This is the first multi-agent Agent Nebula workflow. A downstream math agent reg
 
 No LLM is involved. Discovery and deterministic `skill_id` dispatch make the routing explicit and testable. This is the foundation for later enterprise orchestration examples.
 
-Run three terminals after `make init`: `make run provider`, `make run orchestrator`, then `make run client`.
+Run three terminals after `make init example-09`: `make run example-09 provider`, `make run example-09 orchestrator`, then `make run example-09 client`.

@@ -1,0 +1,120 @@
+{
+  "example-01": {
+    "directory": "examples/01-a2a-hello",
+    "name": "A2A Hello",
+    "description": "a minimal SecureAgent A2A server and client exchanging a message through JSON-RPC.",
+    "init_mode": "basic",
+    "processes": {
+      "server": "main.py",
+      "client": "client.py"
+    }
+  },
+  "example-02": {
+    "directory": "examples/02-a2a-multiskill",
+    "name": "A2A Multi-Skill",
+    "description": "one SecureAgent advertising multiple A2A skills and explicit client-side skill invocation.",
+    "init_mode": "basic",
+    "processes": {
+      "server": "main.py",
+      "client": "client.py"
+    }
+  },
+  "example-03": {
+    "directory": "examples/03-a2a-multi-binding",
+    "name": "A2A Multi-Binding",
+    "description": "the same A2A skills over JSON-RPC, HTTP+JSON, and gRPC protocol bindings.",
+    "init_mode": "basic",
+    "processes": {
+      "server": "main.py",
+      "client": "client.py"
+    }
+  },
+  "example-04": {
+    "directory": "examples/04-a2a-https",
+    "name": "A2A HTTPS",
+    "description": "certificate-verified A2A over HTTPS using generated development TLS material.",
+    "init_mode": "tls",
+    "processes": {
+      "server": "main.py",
+      "client": "client.py"
+    }
+  },
+  "example-05": {
+    "directory": "examples/05-a2a-multi-binding-tls",
+    "name": "A2A Multi-Binding + TLS",
+    "description": "JSON-RPC/HTTPS, HTTP+JSON/HTTPS, and gRPC/TLS with the same A2A skills.",
+    "init_mode": "tls",
+    "processes": {
+      "server": "main.py",
+      "client": "client.py"
+    }
+  },
+  "example-06": {
+    "directory": "examples/06-nebula-registration-discovery",
+    "name": "Agent Nebula Registration & Discovery",
+    "description": "Agent Nebula provider registration, Registry discovery, and invocation through the discovered A2A Agent Card.",
+    "init_mode": "nebula-csr",
+    "processes": {
+      "server": "main.py",
+      "client": "client.py"
+    }
+  },
+  "example-07": {
+    "directory": "examples/07-nebula-oauth",
+    "name": "Agent Nebula OAuth",
+    "description": "OAuth-protected A2A invocation after Agent Nebula Registry discovery.",
+    "init_mode": "oauth-nebula",
+    "processes": {
+      "server": "main.py",
+      "client": "client.py"
+    }
+  },
+  "example-08": {
+    "directory": "examples/08-nebula-skill-oauth",
+    "name": "Skill-Level OAuth",
+    "description": "skill-level OAuth scopes and least-privilege authorization for multiple A2A skills.",
+    "init_mode": "oauth-nebula",
+    "processes": {
+      "server": "main.py",
+      "client": "client.py"
+    }
+  },
+  "example-09": {
+    "directory": "examples/09-nebula-agent-to-agent",
+    "name": "Agent-to-Agent",
+    "description": "a dual-role SecureAgent serving A2A while discovering and invoking a downstream Agent Nebula provider.",
+    "init_mode": "nebula",
+    "processes": {
+      "provider": "provider.py",
+      "orchestrator": "orchestrator.py",
+      "client": "client.py"
+    }
+  },
+  "example-10": {
+    "directory": "examples/10-a2a-api-key",
+    "name": "API-Key Protected Agent",
+    "description": "Reserved for API-key endpoint security; the required Platform verifier configuration boundary is not yet available.",
+    "init_mode": "planned",
+    "processes": {}
+  },
+  "example-11": {
+    "directory": "examples/11-a2a-a2ui",
+    "name": "A2A + A2UI v1.0 Acceptance",
+    "description": "A2A skill invocation with A2UI v1.0 output and ordinary non-A2UI fallback.",
+    "init_mode": "basic",
+    "processes": {
+      "server": "main.py",
+      "client": "client.py"
+    }
+  },
+  "example-12": {
+    "directory": "examples/12-a2a-a2ui-actions",
+    "name": "A2UI v1.0 Actions over A2A",
+    "description": "renderer-to-agent A2UI actions, correlated action responses, and updated UI state over A2A.",
+    "init_mode": "basic",
+    "processes": {
+      "server": "main.py",
+      "client": "client.py"
+    }
+  }
+}

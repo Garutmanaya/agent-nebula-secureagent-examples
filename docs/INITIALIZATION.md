@@ -1,47 +1,50 @@
-# Initialization contract
+# External environment and lifecycle
 
-All example initialization is delegated to `scripts/init-example.sh` and `scripts/common.sh`.
+Example lifecycle is controlled from the repository root. Individual example directories do not contain Makefiles or generated runtime material.
 
-## Generated directories
+## Environment root
 
-- `.runtime/`: temporary CSRs and local runtime files.
-- `certs/`: generated public certificates.
-- `secrets/`: private keys and externally provisioned secrets; mode 0700 directory, 0600 generated keys.
-- `trust/`: local development CA/trust bundles.
-
-## Modes
-
-- `basic`: paths only.
-- `tls`: paths + local CA + server certificate.
-- `oauth`: TLS material + local OAuth client signing key.
-- `nebula`: TLS material + optional onboarding API-key provisioning from the environment.
-- `oauth-nebula`: combines OAuth and Nebula requirements.
-- `planned`: paths only; no fake credentials or protocol material.
-
-The scripts are deliberately development-only. Production deployments should use the Agent Nebula deployment/PKI process and external secret stores.
-
-## External example runtime root
-
-Set `AGENT_NEBULA_SECUREAGENTS_EXAMPLES_RUNTIME` to keep generated example data,
-runtime material, secrets, certificates, trust material, and generated configuration
-outside the source checkout:
+`AGENT_NEBULA_EXAMPLES_ROOT` selects the external root and defaults to `/opt/nebula/examples`.
 
 ```bash
-export AGENT_NEBULA_SECUREAGENTS_EXAMPLES_RUNTIME=/opt/agent-nebula/secureagent-examples
-make -C examples/06-nebula-registration-discovery init
+export AGENT_NEBULA_EXAMPLES_ROOT=/opt/nebula/examples
+make env-init
 ```
 
-The example is initialized under:
+`env-init` is idempotent and creates `certs/`, `config/`, `data/`, `logs/`, `secrets/`, `tmp/`, and `runtime/`. Existing secrets and certificates are never overwritten merely by environment initialization.
 
-```text
-/opt/agent-nebula/secureagent-examples/06-nebula-registration-discovery/
-├── .data/
-├── .runtime/
-└── config/
+## Example initialization
+
+```bash
+make init example-01
 ```
 
-Generated configuration contains the resolved external `.data` and `.runtime`
-paths. Checked-in configuration files are not modified. `make run ...` selects the
-generated configuration automatically while the environment variable is set.
-Without the variable, initialization and execution retain the local example-directory
-layout.
+Initialization reads metadata from `examples.json`, displays the example name/description, creates `runtime/example-01`, and renders the checked-in `examples/01-a2a-hello/config/*.conf` templates into `runtime/example-01/config/`. Generated configuration contains absolute external paths.
+
+Security examples place public certificates/trust material under `certs/example-NN/` and private keys/credentials under `secrets/example-NN/`. Temporary CSRs and other disposable files belong under the example runtime `tmp/` directory.
+
+## Running
+
+```bash
+make run example-01 server
+make run example-01 client
+```
+
+The selected process is validated against `examples.json`. The runner sets `AGENT_NEBULA_EXAMPLE_CONFIG_DIR` to the initialized external configuration directory before executing the Python application.
+
+## Cleaning
+
+```bash
+make clean example-01
+make clean all
+```
+
+Clean removes only `$AGENT_NEBULA_EXAMPLES_ROOT/runtime/example-NN`. It deliberately preserves external certificates and secrets.
+
+## Bulk initialization
+
+```bash
+make init all
+```
+
+This initializes every catalog entry. Reserved/planned examples create their external runtime boundary but do not fabricate unsupported protocol/security material.

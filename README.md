@@ -41,34 +41,71 @@ The A2A skill model is independent of protocol binding. A skill is registered on
 
 ## Quick start
 
-From a workspace where this repository and `agent-nebula-secureagent` are siblings:
+All lifecycle commands run from the repository root. Example source stays in the repository; generated configuration, certificates, secrets, data, logs, and temporary runtime state live under an external filesystem root.
 
 ```bash
 make install
-cd examples/01-a2a-hello
-make init
-make run server
+export AGENT_NEBULA_EXAMPLES_ROOT=/opt/nebula/examples   # optional; this is the default
+make env-init
+make list
+make init example-01
+make run example-01 server
 ```
 
 Run the client in another terminal:
 
 ```bash
-make run client
+make run example-01 client
 ```
 
-Examples 02–04 use the same lifecycle. Example 03 additionally requires the Platform A2A gRPC dependency/extra; Example 04 requires OpenSSL during initialization.
+Clean only disposable runtime state with:
+
+```bash
+make clean example-01
+```
+
+Certificates and secrets are intentionally preserved by `clean`.
+
+## External environment contract
+
+`AGENT_NEBULA_EXAMPLES_ROOT` selects the external environment root and defaults to `/opt/nebula/examples`. `make env-init` creates the durable top-level filesystem without overwriting existing operator-provided material:
+
+```text
+/opt/nebula/examples/
+├── certs/
+├── config/
+├── data/
+├── logs/
+├── secrets/
+├── tmp/
+└── runtime/
+    └── example-01/
+        ├── config/
+        ├── data/
+        ├── logs/
+        └── tmp/
+```
+
+Example-specific certificate and secret material is stored below `certs/example-NN/` and `secrets/example-NN/`. The runtime tree is disposable; credentials and certificates are not.
 
 ## Configuration boundaries
 
-Configuration remains responsibility-oriented and local to each example for now. `secureagent.conf` contains generic application/runtime settings. `a2aserver.conf` owns the A2A listener and Agent Card. A2A clients use one or more `a2aclient*.conf` files to constrain the transport/security behavior being tested. TLS material is generated under the example directory when required. Configuration externalization is intentionally outside this phase.
+Checked-in configuration remains self-contained with each example under `examples/<name>/config/`. These files are source templates and are never modified in place. `make init example-NN` copies and resolves them into `$AGENT_NEBULA_EXAMPLES_ROOT/runtime/example-NN/config/`, including external data/runtime, certificate, and secret paths. Application code receives the generated configuration directory through `AGENT_NEBULA_EXAMPLE_CONFIG_DIR`.
+
+`secureagent.conf` contains generic application/runtime settings. `a2aserver.conf` owns the A2A listener and Agent Card. A2A clients use one or more `a2aclient*.conf` files. `nebula.conf` remains optional and independent.
+
+## Lifecycle catalog
+
+`examples.json` is the authoritative lifecycle catalog. It defines each example's directory, display name, what the example demonstrates, initialization mode, and runnable processes. `make init` and `make run` display this metadata before execution. Add lifecycle behavior through the shared scripts rather than per-example Makefiles.
 
 ## Repository layout
 
 ```text
-examples/          Current agreed executable scenarios
+examples/          Current executable scenarios; each owns its config/ templates
+examples.json      Example identity, description, initialization, and process catalog
 examples-legacy/   Historical reference examples
-docs/              Example authoring/configuration notes
-scripts/           Shared initialization and cleanup helpers
+docs/              Example authoring/configuration/lifecycle documentation
+scripts/           Shared external environment and lifecycle implementation
 ```
 
 ## Design rules

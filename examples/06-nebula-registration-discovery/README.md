@@ -32,36 +32,36 @@ After creation, open the Provider workspace.
 
 ## 3. Generate the agent private key and CSR
 
-From this example directory run:
+From the repository root run:
 
 ```bash
-make init
+make init example-06
 ```
 
-`make init` now generates only the agent's TLS private key and CSR:
+`make init example-06` now generates only the agent's TLS private key and CSR:
 
 ```text
-.runtime/
-├── certs/
-│   └── server.csr
-├── secrets/
+$AGENT_NEBULA_EXAMPLES_ROOT/
+├── secrets/example-06/
 │   └── server.key
-└── trust/
+└── runtime/example-06/
+    └── tmp/
+        └── server.csr
 ```
 
 Inspect/copy the CSR with:
 
 ```bash
-cat .runtime/certs/server.csr
+cat $AGENT_NEBULA_EXAMPLES_ROOT/runtime/example-06/tmp/server.csr
 ```
 
-Do **not** upload `.runtime/secrets/server.key`. The private key must remain on the agent host.
+Do **not** upload `$AGENT_NEBULA_EXAMPLES_ROOT/secrets/example-06/server.key`. The private key must remain on the agent host.
 
 The generated development CSR contains `localhost` and `127.0.0.1` SANs because this example advertises `https://localhost:9006/`. For a remotely reachable deployment, generate the CSR for the hostname/IP actually advertised by the Agent Card.
 
 ## 4. Submit the CSR and obtain Agent Nebula trust
 
-Open the Provider and select **Certificates**. Paste the complete contents of `.runtime/certs/server.csr` into **Certificate signing request** and submit it.
+Open the Provider and select **Certificates**. Paste the complete contents of `$AGENT_NEBULA_EXAMPLES_ROOT/runtime/example-06/tmp/server.csr` into **Certificate signing request** and submit it.
 
 Use **Download Agent Nebula trust root** to obtain the Agent Nebula trust bundle.
 
@@ -70,68 +70,71 @@ Use **Download Agent Nebula trust root** to obtain the Agent Nebula trust bundle
 After the CSR is approved/issued, download the resulting public server certificate. Install the two public trust artifacts as:
 
 ```text
-.runtime/certs/server.crt
-.runtime/trust/agent-nebula-ca.crt
+$AGENT_NEBULA_EXAMPLES_ROOT/certs/example-06/server.crt
+$AGENT_NEBULA_EXAMPLES_ROOT/certs/example-06/agent-nebula-ca.crt
 ```
 
 The final TLS layout is:
 
 ```text
-.runtime/
-├── certs/
-│   ├── server.csr
-│   └── server.crt
-├── secrets/
-│   └── server.key
-└── trust/
-    └── agent-nebula-ca.crt
+$AGENT_NEBULA_EXAMPLES_ROOT/
+├── certs/example-06/
+│   ├── server.crt
+│   └── agent-nebula-ca.crt
+├── secrets/example-06/
+│   ├── server.key
+│   └── onboarding-api-key
+└── runtime/example-06/
+    ├── config/
+    └── tmp/
+        └── server.csr
 ```
 
-`a2aserver.conf`, `a2aclient.conf`, and `nebula.conf` are already configured to use these managed runtime paths.
+`config/a2aserver.conf`, `config/a2aclient.conf`, and `config/nebula.conf` are already configured to use these managed runtime paths.
 
 ## 5. Generate the onboarding API key
 
 In the same Provider workspace, open **Credentials** and create an API key with the permissions required to onboard/register this agent. Store the returned secret locally as:
 
 ```text
-.runtime/secrets/onboarding-api-key
+$AGENT_NEBULA_EXAMPLES_ROOT/secrets/example-06/onboarding-api-key
 ```
 
 Protect it as a secret:
 
 ```bash
-chmod 600 .runtime/secrets/onboarding-api-key
+chmod 600 $AGENT_NEBULA_EXAMPLES_ROOT/secrets/example-06/onboarding-api-key
 ```
 
 Alternatively, rerun initialization with the API key in the environment:
 
 ```bash
 export NEBULA_ONBOARDING_API_KEY='...'
-make init
+make init example-06
 unset NEBULA_ONBOARDING_API_KEY
 ```
 
-The initializer writes the value into `.runtime/secrets/onboarding-api-key`; it does not place the API key in a configuration file.
+The initializer writes the value into `$AGENT_NEBULA_EXAMPLES_ROOT/secrets/example-06/onboarding-api-key`; it does not place the API key in a configuration file.
 
 ## 6. Verify configuration before starting
 
 The example expects these four files:
 
 ```text
-.runtime/certs/server.crt
-.runtime/secrets/server.key
-.runtime/trust/agent-nebula-ca.crt
-.runtime/secrets/onboarding-api-key
+$AGENT_NEBULA_EXAMPLES_ROOT/certs/example-06/server.crt
+$AGENT_NEBULA_EXAMPLES_ROOT/secrets/example-06/server.key
+$AGENT_NEBULA_EXAMPLES_ROOT/certs/example-06/agent-nebula-ca.crt
+$AGENT_NEBULA_EXAMPLES_ROOT/secrets/example-06/onboarding-api-key
 ```
 
-The default Registry URL is `https://localhost:8000`. Update `nebula.conf` if Agent Nebula is running elsewhere. The Registry must also be able to reach the Agent Card URL advertised by `a2aserver.conf`.
+The default Registry URL is `https://localhost:8000`. Update `config/nebula.conf` if Agent Nebula is running elsewhere. The Registry must also be able to reach the Agent Card URL advertised by `config/a2aserver.conf`.
 
 ## 7. Run the registration/discovery acceptance test
 
 Start the provider:
 
 ```bash
-make run server
+make run example-06 server
 ```
 
 The server should start over HTTPS and register its Agent Card/capabilities with Agent Nebula using the onboarding API key.
@@ -139,7 +142,7 @@ The server should start over HTTPS and register its Agent Card/capabilities with
 In another terminal run:
 
 ```bash
-make run client
+make run example-06 client
 ```
 
 The client must discover the provider through Agent Nebula Registry by capability and then invoke all three A2A skills (`hello`, `echo`, and `add`). It must not depend on a hard-coded provider URL for discovery.

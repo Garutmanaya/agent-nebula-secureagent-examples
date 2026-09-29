@@ -15,19 +15,19 @@ SecureAgent client
     -> client verification
 ```
 
-A2UI configuration remains independent in `a2ui.conf`; it is not embedded in `a2aserver.conf` or `a2aclient.conf`.
+A2UI configuration remains independent in `config/a2ui.conf`; it is not embedded in `config/a2aserver.conf` or `config/a2aclient.conf`.
 
 ## Run
 
 ```bash
-make init
-make run server
+make init example-11
+make run example-11 server
 ```
 
 In another terminal:
 
 ```bash
-make run client
+make run example-11 client
 ```
 
 Expected client result:
