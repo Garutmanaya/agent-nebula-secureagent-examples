@@ -20,6 +20,11 @@ def external_root() -> Path:
     return Path(os.environ.get(ROOT_ENV, str(DEFAULT_ROOT))).expanduser().resolve()
 
 
+def agent_hostname() -> str:
+    """Return the externally advertised example-agent hostname."""
+    return os.environ.get("AGENT_HOSTNAME", "").strip() or socket.gethostname()
+
+
 def catalog() -> dict:
     return json.loads(MANIFEST.read_text())
 
@@ -103,7 +108,7 @@ def pki_init() -> None:
     client_key = certs / "client.key"
     client_cert = certs / "client.crt"
     trust_bundle = certs / "trust-bundle.pem"
-    host = os.environ.get("AGENT_NEBULA_EXAMPLE_HOSTNAME", socket.gethostname())
+    host = agent_hostname()
     sans = "DNS:localhost,IP:127.0.0.1" if host == "localhost" else f"DNS:{host},DNS:localhost,IP:127.0.0.1"
 
     if not ca_key.exists() or not ca_cert.exists():
@@ -137,7 +142,7 @@ def nebula_pki_init() -> None:
     require("openssl")
     root = external_root()
     certs = root / "nebula-certs"
-    host = os.environ.get("AGENT_NEBULA_EXAMPLE_HOSTNAME", socket.gethostname())
+    host = agent_hostname()
     sans = "DNS:localhost,IP:127.0.0.1" if host == "localhost" else f"DNS:{host},DNS:localhost,IP:127.0.0.1"
 
     def enrollment_identity(name: str, san: str) -> None:
@@ -188,6 +193,8 @@ def required_environment_url(name: str) -> str:
 
 
 def rewrite_config(text: str, p: dict[str, Path]) -> str:
+    if "{{AGENT_HOSTNAME}}" in text:
+        text = text.replace("{{AGENT_HOSTNAME}}", agent_hostname())
     if "{{NEBULA_URL}}" in text:
         text = text.replace("{{NEBULA_URL}}", required_environment_url("NEBULA_URL"))
     if "{{OAUTH_URL}}" in text:
