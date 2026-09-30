@@ -64,12 +64,12 @@ async def main():
 
     try:
         # Step 1: Discover an A2A provider through the Agent Nebula REST API.
-        found = await agent.discover(capability="hello")
+        found = await agent.discover(query="hello")
 
         if not found:
             raise AssertionError(
                 "Agent Nebula Registry returned no provider "
-                "for capability 'hello'"
+                "for query 'hello'"
             )
 
         print_discovery_results(found)
@@ -83,6 +83,10 @@ async def main():
             found[0],
         )
 
+        print("\nSELECTED AGENT:")
+        print(f"  name           : {provider.display_name}")
+        print(f"  agent_id       : {provider.agent_id}")
+        print(f"  agent_card_url : {provider.agent_card_url}")
         print(f"\nPASS  Registry discovery: {provider.display_name}")
 
         if not provider.agent_card_url:

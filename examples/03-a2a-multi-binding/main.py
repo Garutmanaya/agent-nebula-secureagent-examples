@@ -7,7 +7,9 @@ from agent_nebula_secureagent import SecureAgent
 
 HERE = Path(__file__).resolve().parent
 
+# Configure SecureAgent from the generated runtime configuration.
 agent = SecureAgent(config=config_path(HERE, "secureagent.conf"))
+# Enable the A2A server role using the example-specific protocol config.
 agent.use_protocol("a2a", role="server", config=config_path(HERE, "a2aserver.conf"))
 
 
@@ -30,4 +32,5 @@ async def add(payload):
 
 
 if __name__ == "__main__":
+    print("START: SecureAgent A2A example server")
     agent.run()
