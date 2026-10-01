@@ -16,19 +16,22 @@ HERE = Path(__file__).resolve().parent
 DOWNSTREAM_QUERY = "math.add"
 DOWNSTREAM_SKILL = "math.add"
 
+# AGENT NEBULA CONFIGURATION:
+# One SecureAgent composes official a2a-sdk server and client roles while
+# adding Registry discovery and Nebula extension handling.
 agent = SecureAgent(
     config=config_path(HERE, "secureagent.conf"),
     nebula_config=config_path(HERE, "nebula.conf"),
 )
 
-# Server role: expose the orchestrator to the external client.
+# AGENT NEBULA CONFIGURATION: compose the official a2a-sdk server role.
 agent.use_protocol(
     "a2a",
     role="server",
     config=config_path(HERE, "orchestrator-server.conf"),
 )
 
-# Client role: discover and invoke the downstream provider.
+# AGENT NEBULA CONFIGURATION: compose the official a2a-sdk client role.
 agent.use_protocol(
     "a2a",
     role="client",
@@ -36,13 +39,16 @@ agent.use_protocol(
 )
 
 
+# AGENT NEBULA CONFIGURATION:
+# @agent.skill adapts this handler to the official a2a-sdk AgentExecutor.
 @agent.skill("operations.add")
 async def orchestrated_add(payload):
     """Delegate an addition request to a dynamically discovered math agent."""
     print(f"ORCHESTRATOR: operations.add received data={dict(payload)!r}")
 
-    # Free-text discovery searches indexed Agent Card metadata. The orchestrator
-    # intentionally knows the required skill, not a concrete provider address.
+    # AGENT NEBULA EXTENSION:
+    # Free-text Registry discovery searches indexed Agent Card metadata. The
+    # orchestrator knows the required skill, not a provider address.
     providers = await agent.discover(query=DOWNSTREAM_QUERY)
     print(
         f"ORCHESTRATOR DISCOVERY: query={DOWNSTREAM_QUERY!r} "
@@ -63,6 +69,9 @@ async def orchestrated_add(payload):
         f"id={provider.agent_id!r} skill={DOWNSTREAM_SKILL!r}"
     )
 
+    # AGENT NEBULA EXTENSION:
+    # skill_id selects the downstream skill through Nebula's A2A extension;
+    # a2a-sdk owns the underlying A2A message execution.
     responses = await agent.send_message(
         provider,
         data=payload,

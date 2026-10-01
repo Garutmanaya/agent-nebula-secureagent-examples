@@ -63,7 +63,10 @@ async def main():
     )
 
     try:
-        # Step 1: Discover an A2A provider through the Agent Nebula REST API.
+        # AGENT NEBULA EXTENSION:
+        # Registry discovery is Agent Nebula functionality; it is not part of
+        # the A2A protocol or a2a-sdk. Discovery returns a Nebula provider
+        # reference containing the registered Agent Card location.
         found = await agent.discover(query="hello")
 
         if not found:
@@ -94,9 +97,10 @@ async def main():
                 "Registry discovery result does not contain an Agent Card URL"
             )
 
-        # Step 2: Resolve the official A2A Agent Card advertised by the
-        # discovered Registry entry.
-        #agent_card = await agent.resolve_agent_card(provider.agent_card_url)
+        # STANDARD A2A / AGENT NEBULA INTEGRATION:
+        # resolve_agent_card() exposes the official a2a-sdk AgentCard model.
+        # Registry stores the complete well-known Agent Card URL, while the
+        # SDK resolver is initialized with the provider base URL.
         agent_card_path = "/.well-known/agent-card.json"
 
         if not provider.agent_card_url.endswith(agent_card_path):
@@ -107,22 +111,17 @@ async def main():
         provider_base_url = provider.agent_card_url.removesuffix(agent_card_path)
         agent_card = await agent.resolve_agent_card(provider_base_url)
 
-
         print("\nResolved A2A Agent Card:")
-        print(f"  name       : {agent_card.get('name')}")
-        print(f"  skills     : {[skill.get('id') for skill in agent_card.get('skills', [])]}")
-        print(f"  interfaces : {agent_card.get('supportedInterfaces', [])}")
+        print(f"  name       : {agent_card.name}")
+        print(f"  skills     : {[skill.id for skill in agent_card.skills]}")
+        print(f"  interfaces : {list(agent_card.supported_interfaces)}")
 
-        advertised_skills = {
-            skill["id"]
-            for skill in agent_card.get("skills", [])
-            if isinstance(skill, dict) and isinstance(skill.get("id"), str)
-        }
+        advertised_skills = {skill.id for skill in agent_card.skills}
 
-        # Step 3: Invoke the discovered provider through SecureAgent. The
-        # selected skill is carried by the Agent Nebula skill-selection
-        # extension while Platform resolves the authoritative Agent Card
-        # interface and security requirements.
+        # AGENT NEBULA EXTENSION:
+        # send_message(provider, skill_id=...) is a Nebula convenience API for
+        # Registry-discovered providers. skill_id is carried by the Nebula
+        # skill-selection A2A extension; a2a-sdk still owns A2A execution.
         for skill_id, data, expected in SKILL_CASES:
             if skill_id not in advertised_skills:
                 raise AssertionError(

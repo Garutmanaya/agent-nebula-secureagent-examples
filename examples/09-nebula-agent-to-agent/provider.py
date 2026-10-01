@@ -14,7 +14,9 @@ from examples.example_paths import config_path
 
 HERE = Path(__file__).resolve().parent
 
-# This SecureAgent is an A2A server and an Agent Nebula registered provider.
+# AGENT NEBULA CONFIGURATION:
+# SecureAgent builds an Agent Nebula-registered provider around the official
+# a2a-sdk server stack.
 agent = SecureAgent(
     config=config_path(HERE, "secureagent.conf"),
     nebula_config=config_path(HERE, "nebula.conf"),
@@ -26,6 +28,8 @@ agent.use_protocol(
 )
 
 
+# AGENT NEBULA CONFIGURATION:
+# @agent.skill adapts this handler to the official a2a-sdk AgentExecutor.
 @agent.skill("math.add")
 def add(payload):
     """Add two integers supplied by the upstream orchestrator."""

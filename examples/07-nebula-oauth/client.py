@@ -57,7 +57,10 @@ def print_discovery_results(found):
 
 async def main() -> None:
     """Discover the protected provider and verify all example skills."""
-    # Agent Nebula configuration enables Registry discovery and OAuth metadata.
+    # AGENT NEBULA CONFIGURATION / SECURITY:
+    # SecureAgent configures Registry access and OAuth credential handling.
+    # OAuth credentials are applied through the a2a-sdk client integration;
+    # standard A2A request execution remains owned by a2a-sdk.
     agent = SecureAgent(
         config=config_path(HERE, "secureagent.conf"),
         nebula_config=config_path(HERE, "nebula.conf"),
@@ -69,8 +72,9 @@ async def main() -> None:
     )
 
     try:
-        # ``query`` maps to the Registry's free-text ``q`` parameter. It searches
-        # indexed Agent Card metadata such as skills, names, tags, and summaries.
+        # AGENT NEBULA EXTENSION:
+        # ``query`` maps to Registry free-text ``q`` and searches indexed Agent
+        # Card metadata. Registry discovery is outside the A2A protocol.
         found = await agent.discover(query=DISCOVERY_QUERY)
         print_discovery_results(found)
 
@@ -88,8 +92,9 @@ async def main() -> None:
             f"id={provider.agent_id!r}"
         )
 
-        # Invoke the selected provider. SecureAgent performs the configured OAuth
-        # flow transparently before each protected A2A request.
+        # AGENT NEBULA SECURITY / EXTENSION:
+        # SecureAgent obtains/applies configured OAuth credentials and skill_id
+        # activates Nebula skill selection. a2a-sdk owns the A2A operation.
         for skill_id, data, expected in SKILL_CASES:
             print(f"INVOKE: skill={skill_id!r} data={data!r}")
             actual = response_text(

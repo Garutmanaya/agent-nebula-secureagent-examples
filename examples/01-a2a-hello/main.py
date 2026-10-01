@@ -7,9 +7,14 @@ from agent_nebula_secureagent import SecureAgent
 
 HERE = Path(__file__).resolve().parent
 
-# Configure SecureAgent from the generated runtime configuration.
+# AGENT NEBULA CONFIGURATION:
+# SecureAgent creates the agent from configuration and adapts the configured
+# skills to the official a2a-sdk server interfaces. A2A protocol handling
+# remains owned by a2a-sdk.
 agent = SecureAgent(config=config_path(HERE, "secureagent.conf"))
-# Enable the A2A server role using the example-specific protocol config.
+# AGENT NEBULA CONFIGURATION:
+# Enable and configure the A2A server role. Platform composes the official
+# a2a-sdk server, request handler, transports, and AgentExecutor adapter.
 agent.use_protocol(
     "a2a",
     role="server",
@@ -17,6 +22,9 @@ agent.use_protocol(
 )
 
 
+# AGENT NEBULA CONFIGURATION:
+# @agent.skill is the configuration-friendly registration API. Platform
+# adapts this handler to the official a2a-sdk AgentExecutor contract.
 @agent.skill("hello")
 async def hello(payload):
     """Execute the example business capability."""

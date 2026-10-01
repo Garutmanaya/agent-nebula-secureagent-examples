@@ -6,6 +6,8 @@ from pathlib import Path
 
 from examples.example_paths import config_path
 
+from a2a.types import AgentCard
+
 from agent_nebula_secureagent import DiscoveredAgent, SecureAgent
 
 HERE = Path(__file__).resolve().parent
@@ -18,11 +20,17 @@ SKILL_CASES = (
 )
 
 
-def _direct_provider(agent_card: dict, agent_card_url: str) -> DiscoveredAgent:
-    """Adapt direct Agent Card discovery to the current SecureAgent invocation API."""
+def _direct_provider(agent_card: AgentCard, agent_card_url: str) -> DiscoveredAgent:
+    """Adapt a direct SDK AgentCard for Nebula skill-selection convenience.
+
+    AGENT NEBULA EXTENSION: A2A core does not define deterministic ``skill_id``
+    dispatch. These multi-skill examples therefore use SecureAgent's formal
+    skill-selection extension while retaining the official AgentCard model.
+    """
+    name = agent_card.name or agent_card_url
     return DiscoveredAgent(
-        agent_id=str(agent_card.get("name") or agent_card_url),
-        display_name=str(agent_card.get("name") or agent_card_url),
+        agent_id=name,
+        display_name=name,
         agent_card_url=agent_card_url,
     )
 
@@ -47,6 +55,8 @@ async def _test_all_skills(agent: SecureAgent, provider: DiscoveredAgent, label:
     """Invoke and validate every skill advertised by this example."""
     passed = 0
     for skill_id, data, expected in SKILL_CASES:
+        # AGENT NEBULA EXTENSION: skill_id selects one advertised skill through
+        # the formal Nebula extension; A2A transport execution remains a2a-sdk.
         responses = await agent.send_message(
             provider,
             data=data,
@@ -67,7 +77,7 @@ async def main() -> None:
     agent.use_protocol("a2a", role="client", config=config_path(HERE, "a2aclient.conf"))
     try:
         card = await agent.resolve_agent_card(SERVER_URL)
-        advertised = {skill["id"] for skill in card.get("skills", [])}
+        advertised = {skill.id for skill in card.skills}
         expected = {case[0] for case in SKILL_CASES}
         if advertised != expected:
             raise AssertionError(f"unexpected advertised skills: {sorted(advertised)}")

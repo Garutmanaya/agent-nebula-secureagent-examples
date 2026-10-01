@@ -32,14 +32,16 @@ ORCHESTRATOR_SKILL = "operations.add"
 async def main() -> None:
     """Discover the orchestrator and invoke its operations.add skill."""
 
-    # Create the SecureAgent client using the example's generated runtime
-    # configuration. Agent Nebula configuration enables Registry discovery.
+    # AGENT NEBULA CONFIGURATION:
+    # SecureAgent creates/configures the A2A client environment and enables
+    # Agent Nebula Registry discovery.
     agent = SecureAgent(
         config=config_path(HERE, "secureagent.conf"),
         nebula_config=config_path(HERE, "nebula.conf"),
     )
 
-    # Enable the official A2A protocol in client mode.
+    # AGENT NEBULA CONFIGURATION:
+    # Platform composes the official a2a-sdk client from this configuration.
     agent.use_protocol(
         "a2a",
         role="client",
@@ -47,8 +49,9 @@ async def main() -> None:
     )
 
     try:
-        # Discover agents advertising the capability required by this client.
-        # The external client expects the orchestrator to match this query.
+        # AGENT NEBULA EXTENSION:
+        # Registry discovery is outside A2A. The external client discovers only
+        # the orchestrator; downstream provider discovery belongs to it.
         agents = await agent.discover(
             query=ORCHESTRATOR_QUERY,
         )
@@ -80,8 +83,9 @@ async def main() -> None:
         )
         print("FLOW: client -> orchestrator -> discovery -> provider -> orchestrator -> client")
 
-        # Invoke the orchestrator. The orchestrator will independently discover
-        # the downstream provider and forward the operations.add request.
+        # AGENT NEBULA EXTENSION:
+        # skill_id uses Nebula skill selection for the discovered provider. The
+        # underlying message exchange is executed by a2a-sdk.
         response = await agent.send_message(
             orchestrator,
             data={"a": 20, "b": 22},
