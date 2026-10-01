@@ -101,14 +101,61 @@
   },
   "example-10": {
     "directory": "examples/10-a2a-api-key",
-    "name": "API-Key Protected Agent",
-    "description": "Reserved for API-key endpoint security; the required Platform verifier configuration boundary is not yet available.",
-    "init_mode": "planned",
-    "processes": {},
-    "certificate_profile": "nebula"
+    "name": "API Key Security",
+    "description": "A2A v1.0 API Key Security security example.",
+    "init_mode": "tls",
+    "processes": {
+      "server": "main.py",
+      "client": "client.py"
+    },
+    "certificate_profile": "local"
   },
   "example-11": {
-    "directory": "examples/11-a2a-a2ui",
+    "directory": "examples/11-a2a-http-auth",
+    "name": "HTTP Authentication",
+    "description": "A2A v1.0 HTTP Authentication security example.",
+    "init_mode": "tls",
+    "processes": {
+      "server": "main.py",
+      "client": "client.py"
+    },
+    "certificate_profile": "local"
+  },
+  "example-12": {
+    "directory": "examples/12-a2a-openid-connect",
+    "name": "OpenID Connect",
+    "description": "A2A v1.0 OpenID Connect security example.",
+    "init_mode": "tls",
+    "processes": {
+      "server": "main.py",
+      "client": "client.py"
+    },
+    "certificate_profile": "local"
+  },
+  "example-13": {
+    "directory": "examples/13-a2a-mtls",
+    "name": "Mutual TLS",
+    "description": "A2A v1.0 Mutual TLS security example.",
+    "init_mode": "tls",
+    "processes": {
+      "server": "main.py",
+      "client": "client.py"
+    },
+    "certificate_profile": "local"
+  },
+  "example-14": {
+    "directory": "examples/14-a2a-multiple-security",
+    "name": "Multiple Security Schemes",
+    "description": "A2A v1.0 Multiple Security Schemes security example.",
+    "init_mode": "tls",
+    "processes": {
+      "server": "main.py",
+      "client": "client.py"
+    },
+    "certificate_profile": "local"
+  },
+  "example-21": {
+    "directory": "examples/21-a2a-a2ui",
     "name": "A2A + A2UI v1.0 Acceptance",
     "description": "A2A skill invocation with A2UI v1.0 output and ordinary non-A2UI fallback.",
     "init_mode": "basic",
@@ -118,8 +165,8 @@
     },
     "certificate_profile": "local"
   },
-  "example-12": {
-    "directory": "examples/12-a2a-a2ui-actions",
+  "example-22": {
+    "directory": "examples/22-a2a-a2ui-actions",
     "name": "A2UI v1.0 Actions over A2A",
     "description": "renderer-to-agent A2UI actions, correlated action responses, and updated UI state over A2A.",
     "init_mode": "basic",
