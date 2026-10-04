@@ -209,5 +209,29 @@
       "client": "client.py"
     },
     "certificate_profile": "local"
+  },
+  "example-24": {
+    "directory": "examples/24-a2ui-rich",
+    "name": "A2UI Mixed Basic + Rich Catalog",
+    "description": "Application-owned mixed A2UI v1.0 Basic and Agent Nebula Rich Catalog presentation with shared browser validation.",
+    "init_mode": "basic",
+    "processes": {
+      "server": "main.py",
+      "client": "client.py",
+      "browser": "browser.py"
+    },
+    "certificate_profile": "local"
+  },
+  "example-25": {
+    "directory": "examples/25-a2ui-skill-result",
+    "name": "A2UI Skill Result",
+    "description": "Agent Nebula multi-skill dispatch to native a2a-sdk executors that independently produce application-owned A2UI v1.0 results.",
+    "init_mode": "basic",
+    "processes": {
+      "server": "main.py",
+      "client": "client.py",
+      "browser": "browser.py"
+    },
+    "certificate_profile": "local"
   }
 }
