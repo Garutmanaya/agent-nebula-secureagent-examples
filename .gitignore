@@ -217,6 +217,6 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 nodemodules
-#examples/common/a2ui-web/node_modules/
-#examples/common/a2ui-web/packages/
-#examples/common/a2ui-web/dist/
+examples/common/a2ui-web/node_modules/
+examples/common/a2ui-web/packages/
+examples/common/a2ui-web/dist/
