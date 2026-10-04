@@ -1,0 +1,10 @@
+{
+  "components": [
+    {"id": "root", "component": "Column", "children": ["title", "service", "status", "latency"]},
+    {"id": "title", "component": "Text", "text": "System Health Skill Result", "variant": "body"},
+    {"id": "service", "component": "Text", "text": {"path": "/service"}, "variant": "body"},
+    {"id": "status", "component": "Text", "text": {"path": "/status"}, "variant": "body"},
+    {"id": "latency", "component": "Text", "text": {"path": "/latency"}, "variant": "body"}
+  ],
+  "dataModel": {}
+}

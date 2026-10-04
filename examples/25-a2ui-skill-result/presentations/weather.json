@@ -1,0 +1,10 @@
+{
+  "components": [
+    {"id": "root", "component": "Column", "children": ["title", "region", "temperature", "conditions"]},
+    {"id": "title", "component": "Text", "text": "Weather Skill Result", "variant": "body"},
+    {"id": "region", "component": "Text", "text": {"path": "/region"}, "variant": "body"},
+    {"id": "temperature", "component": "Text", "text": {"path": "/temperature"}, "variant": "body"},
+    {"id": "conditions", "component": "Text", "text": {"path": "/conditions"}, "variant": "body"}
+  ],
+  "dataModel": {}
+}
