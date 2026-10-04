@@ -245,5 +245,17 @@
       "browser": "browser.py"
     },
     "certificate_profile": "local"
+  },
+  "example-27": {
+    "directory": "examples/27-a2ui-forms",
+    "name": "A2UI Forms on Native A2A",
+    "description": "Browser-edited A2UI v1.0 form state and submission over native a2a-sdk execution.",
+    "init_mode": "basic",
+    "processes": {
+      "server": "main.py",
+      "client": "client.py",
+      "browser": "browser.py"
+    },
+    "certificate_profile": "local"
   }
 }
