@@ -9,3 +9,9 @@ export function createSurfaceProcessor(messages, actionHandler) {
   processor.processMessages(messages);
   return processor;
 }
+
+
+/** Return renderer state only for surfaces that requested data-model sync. */
+export function rendererDataModel(processor) {
+  return processor.getRendererDataModel("v1.0");
+}

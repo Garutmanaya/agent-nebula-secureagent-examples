@@ -1,0 +1,11 @@
+{
+  "components": [
+    {"id": "root", "component": "Column", "children": ["title", "description", "count", "increment"]},
+    {"id": "title", "component": "Text", "text": "Interactive Counter", "variant": "body"},
+    {"id": "description", "component": "Text", "text": "This button sends an A2UI action back to the application over native A2A."},
+    {"id": "count", "component": "Text", "text": {"path": "/count"}, "variant": "body"},
+    {"id": "increment", "component": "Button", "variant": "primary", "child": "increment_label", "action": {"event": {"name": "counter.increment", "context": {"delta": 1}}}},
+    {"id": "increment_label", "component": "Text", "text": "Increment"}
+  ],
+  "dataModel": {"count": 0}
+}

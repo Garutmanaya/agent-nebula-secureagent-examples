@@ -1,8 +1,8 @@
-import React, {useEffect, useMemo, useState} from "react";
+import React, {useEffect, useMemo, useRef, useState} from "react";
 import {ComponentContext, GenericBinder} from "@a2ui/web_core/rendering";
 import {RICH_COMPONENT_RENDERERS} from "@agent-nebula/a2ui-rich";
 import "@agent-nebula/a2ui-rich/styles.css";
-import {createSurfaceProcessor} from "./surfaceState.js";
+import {createSurfaceProcessor, rendererDataModel} from "./surfaceState.js";
 
 
 /**
@@ -255,19 +255,35 @@ function Surface({surface}) {
 
 /** Render provider-owned A2UI v1.0 messages using the official web_core engine. */
 function A2UIRendererContent({ui, onAction}) {
+  const processorRef = useRef(null);
+  const actionRef = useRef(onAction);
+  const [revision, setRevision] = useState(0);
+  actionRef.current = onAction;
+
+  if (!processorRef.current) {
+    let processor;
+    processor = createSurfaceProcessor([], async (action) => {
+      await actionRef.current?.(action, rendererDataModel(processor));
+    });
+    processorRef.current = processor;
+  }
+
+  const processor = processorRef.current;
   const messages = useMemo(() => Array.isArray(ui) ? ui : [], [ui]);
-  const processor = useMemo(
-    () => createSurfaceProcessor(messages, async (action) => onAction?.(action)),
-    [messages, onAction],
-  );
-  const surfaces = [...processor.getSurfaces().values()];
 
   useEffect(() => {
-    return () => processor.dispose();
-  }, [processor]);
+    if (!messages.length) return;
+    // Keep one processor for the interaction. Incremental provider messages
+    // must update surfaces created by earlier A2UI responses.
+    processor.processMessages(messages);
+    setRevision((value) => value + 1);
+  }, [processor, messages]);
 
+  useEffect(() => () => processor.dispose(), [processor]);
+
+  const surfaces = [...processor.getSurfaces().values()];
   if (!surfaces.length) return null;
-  return <div className="a2ui-surfaces">{surfaces.map((surface) => <Surface key={surface.id} surface={surface}/>)}</div>;
+  return <div className="a2ui-surfaces" data-revision={revision}>{surfaces.map((surface) => <Surface key={surface.id} surface={surface}/>)}</div>;
 }
 
 /** Render provider-owned A2UI without allowing one invalid stream to blank the host UI. */

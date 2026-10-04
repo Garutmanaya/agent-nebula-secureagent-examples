@@ -233,5 +233,17 @@
       "browser": "browser.py"
     },
     "certificate_profile": "local"
+  },
+  "example-26": {
+    "directory": "examples/26-a2ui-actions",
+    "name": "A2UI Actions on Native A2A",
+    "description": "Browser A2UI v1.0 action and synchronized data model over native a2a-sdk execution.",
+    "init_mode": "basic",
+    "processes": {
+      "server": "main.py",
+      "client": "client.py",
+      "browser": "browser.py"
+    },
+    "certificate_profile": "local"
   }
 }
