@@ -247,8 +247,17 @@ def rewrite_config(text: str, p: dict[str, Path]) -> str:
     return "\n".join(lines)+"\n"
 
 
+def prepare_a2ui_web() -> None:
+    """Initialize and build the shared browser used by A2UI examples."""
+    require("npm")
+    run_checked(str(REPO / "scripts" / "a2ui-web-init.sh"))
+    run_checked("npm", "--prefix", str(REPO / "examples" / "common" / "a2ui-web"), "run", "build")
+
+
 def init_one(example_id: str) -> None:
     item=entry(example_id); p=paths(example_id); env_init(); banner(example_id)
+    if "browser" in item.get("processes", {}):
+        prepare_a2ui_web()
     if p["runtime"].exists():
         shutil.rmtree(p["runtime"])
     for key in ("config", "data", "logs", "tmp", "certs", "secrets"):

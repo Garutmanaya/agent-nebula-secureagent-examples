@@ -154,6 +154,40 @@
     },
     "certificate_profile": "local"
   },
+  "example-15": {
+    "directory": "examples/15-a2a-tasks",
+    "name": "Native A2A Tasks",
+    "description": "Native a2a-sdk multi-skill Message and Task execution through SecureAgent.",
+    "init_mode": "basic",
+    "processes": {
+      "server": "main.py",
+      "client": "client.py"
+    },
+    "certificate_profile": "local"
+  },
+  "example-16": {
+    "directory": "examples/16-a2a-tasks-https-oauth",
+    "name": "Native A2A Tasks + HTTPS + OAuth",
+    "description": "Agent Nebula registration/discovery and OAuth-protected HTTPS native a2a-sdk Message and Task execution.",
+    "init_mode": "oauth-nebula",
+    "processes": {
+      "server": "main.py",
+      "client": "client.py"
+    },
+    "certificate_profile": "nebula"
+  },
+  "example-23": {
+    "directory": "examples/23-a2ui-basic",
+    "name": "A2UI Basic on Native A2A",
+    "description": "Application-owned A2UI v1.0 Basic Catalog presentation with shared browser validation over native a2a-sdk execution.",
+    "init_mode": "basic",
+    "processes": {
+      "server": "main.py",
+      "client": "client.py",
+      "browser": "browser.py"
+    },
+    "certificate_profile": "local"
+  },
   "example-21": {
     "directory": "examples/21-a2a-a2ui",
     "name": "A2A + A2UI v1.0 Acceptance",

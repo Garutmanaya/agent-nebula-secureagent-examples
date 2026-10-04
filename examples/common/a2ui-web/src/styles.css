@@ -1,0 +1,10 @@
+* { box-sizing: border-box; }
+body { margin: 0; font-family: system-ui, sans-serif; background: #f6f7f9; color: #172033; }
+.example-shell { max-width: 960px; margin: 0 auto; padding: 40px 24px; }
+.eyebrow { font-size: 12px; text-transform: uppercase; letter-spacing: .12em; }
+.a2ui-surface, .card { background: white; border: 1px solid #dfe3e8; border-radius: 12px; padding: 20px; }
+.column { display: flex; flex-direction: column; gap: 12px; }
+.row { display: flex; gap: 16px; }
+.text-h1, .text-heading { font-size: 24px; font-weight: 700; }
+.text-h2, .text-subheading { font-size: 18px; font-weight: 650; }
+.error, .a2ui-error { padding: 16px; border: 1px solid currentColor; border-radius: 8px; }

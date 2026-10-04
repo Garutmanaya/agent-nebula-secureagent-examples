@@ -1,0 +1,19 @@
+{
+  "name": "agent-nebula-examples-a2ui-web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@a2ui/web_core": "file:packages/a2ui-web_core-0.10.7.tgz",
+    "@agent-nebula/a2ui-rich": "file:packages/agent-nebula-a2ui-rich-1.0.0.tgz",
+    "@vitejs/plugin-react": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "vite": "latest",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {}
+}
