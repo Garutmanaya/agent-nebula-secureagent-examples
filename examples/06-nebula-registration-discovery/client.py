@@ -1,16 +1,24 @@
-"""Discover an A2A provider through Agent Nebula and invoke its advertised skills."""
+"""Native A2A client for 06-nebula-registration-discovery."""
+from __future__ import annotations
 
 import asyncio
+import uuid
 from pathlib import Path
 
-from examples.example_paths import config_path
+from a2a.client import ClientCallContext
+from a2a.client.service_parameters import ServiceParametersFactory, with_a2a_extensions
+from a2a.helpers import get_message_text
+from a2a.types import Message, Part, Role, SendMessageRequest
+from google.protobuf.json_format import ParseDict
+from google.protobuf.struct_pb2 import Struct, Value
 
+from examples.example_paths import config_path
 from agent_nebula_secureagent import SecureAgent
 
-
 HERE = Path(__file__).resolve().parent
-
-PROVIDER_NAME = "Registry Discovery Agent"
+PROVIDER_NAME = 'Registry Discovery Agent'
+DISCOVERY_QUERY = 'hello'
+AGENT_CARD_PATH = "/.well-known/agent-card.json"
 
 SKILL_CASES = (
     ("hello", {"name": "Agent Nebula"}, "hello from SecureAgent"),
@@ -19,135 +27,90 @@ SKILL_CASES = (
 )
 
 
-def response_text(responses):
-    """Extract the text payload from a single A2A response message."""
-    if len(responses) != 1:
-        raise AssertionError(f"expected one response, got {len(responses)}")
-
-    message = responses[0].get("message")
-    if not isinstance(message, dict):
-        raise AssertionError(f"missing A2A message: {responses[0]}")
-
-    parts = message.get("parts")
-    if not isinstance(parts, list) or not parts or not isinstance(parts[0], dict):
-        raise AssertionError(f"missing A2A message parts: {message}")
-
-    text = parts[0].get("text")
-    if not isinstance(text, str):
-        raise AssertionError(f"missing text response: {parts[0]}")
-
-    return text
+def _provider_base_url(agent_card_url: str) -> str:
+    """Convert the Registry Agent Card location to its provider base URL."""
+    if not agent_card_url.endswith(AGENT_CARD_PATH):
+        raise AssertionError(f"unexpected Agent Card URL: {agent_card_url}")
+    return agent_card_url.removesuffix(AGENT_CARD_PATH)
 
 
-def print_discovery_results(found):
-    """Print the Agent Nebula Registry discovery results."""
-    print(f"\nRegistry discovery returned {len(found)} agent(s):")
-
-    for index, discovered in enumerate(found, start=1):
-        print(f"\n  [{index}] {discovered.display_name}")
-        print(f"      agent_id       : {discovered.agent_id}")
-        print(f"      agent_card_url : {discovered.agent_card_url}")
-        print(f"      protocols      : {discovered.protocols}")
-        print(f"      skills         : {discovered.skills}")
+def _data_part(data: dict[str, object]) -> Part:
+    """Build a standard A2A data part."""
+    return Part(data=Value(struct_value=ParseDict(data, Struct())))
 
 
-async def main():
+def _skill_request(extension_uri: str, skill_id: str, data: dict[str, object]):
+    """Build native A2A skill-selection metadata and call context."""
+    metadata = ParseDict({extension_uri: {"skillId": skill_id}}, Struct())
+    context = ClientCallContext(
+        state={"agent_nebula.a2a.skill_id": skill_id},
+        service_parameters=ServiceParametersFactory.create(
+            [with_a2a_extensions([extension_uri])]
+        ),
+    )
+    request = SendMessageRequest(
+        message=Message(
+            role=Role.ROLE_USER,
+            message_id=str(uuid.uuid4()),
+            parts=[_data_part(data)],
+        ),
+        metadata=metadata,
+    )
+    return request, context
+
+
+def _select_provider(found):
+    """Select the named example provider from Registry discovery results."""
+    if not found:
+        raise AssertionError(f"Registry returned no provider for {DISCOVERY_QUERY!r}")
+    return next((item for item in found if item.display_name == PROVIDER_NAME), found[0])
+
+
+async def _invoke_skill(client, extension_uri: str, skill_id: str, data: dict[str, object]) -> str:
+    """Invoke one skill through the native a2a-sdk Client."""
+    request, context = _skill_request(extension_uri, skill_id, data)
+    responses = [event async for event in client.send_message(request, context=context)]
+    if len(responses) != 1 or not responses[0].HasField("message"):
+        raise AssertionError(f"{skill_id}: expected one Message response: {responses}")
+    return get_message_text(responses[0].message, delimiter=" ")
+
+
+async def main() -> None:
+    """Discover the provider, resolve its Agent Card, and invoke every skill."""
     agent = SecureAgent(
         config=config_path(HERE, "secureagent.conf"),
         nebula_config=config_path(HERE, "nebula.conf"),
     )
-    agent.use_protocol(
-        "a2a",
-        role="client",
-        config=config_path(HERE, "a2aclient.conf"),
-    )
+    agent.use_protocol("a2a", role="client", config=config_path(HERE, "a2aclient.conf"))
 
     try:
-        # AGENT NEBULA EXTENSION:
-        # Registry discovery is Agent Nebula functionality; it is not part of
-        # the A2A protocol or a2a-sdk. Discovery returns a Nebula provider
-        # reference containing the registered Agent Card location.
-        found = await agent.discover(query="hello")
-
-        if not found:
-            raise AssertionError(
-                "Agent Nebula Registry returned no provider "
-                "for query 'hello'"
-            )
-
-        print_discovery_results(found)
-
-        provider = next(
-            (
-                item
-                for item in found
-                if item.display_name == PROVIDER_NAME
-            ),
-            found[0],
-        )
-
-        print("\nSELECTED AGENT:")
-        print(f"  name           : {provider.display_name}")
-        print(f"  agent_id       : {provider.agent_id}")
-        print(f"  agent_card_url : {provider.agent_card_url}")
-        print(f"\nPASS  Registry discovery: {provider.display_name}")
-
+        # Registry discovery is Agent Nebula functionality outside the A2A protocol.
+        provider = _select_provider(await agent.discover(query=DISCOVERY_QUERY))
         if not provider.agent_card_url:
-            raise AssertionError(
-                "Registry discovery result does not contain an Agent Card URL"
-            )
+            raise AssertionError("Registry result does not contain an Agent Card URL")
+        print(f"PASS  Registry discovery: {provider.display_name}")
 
-        # STANDARD A2A / AGENT NEBULA INTEGRATION:
-        # resolve_agent_card() exposes the official a2a-sdk AgentCard model.
-        # Registry stores the complete well-known Agent Card URL, while the
-        # SDK resolver is initialized with the provider base URL.
-        agent_card_path = "/.well-known/agent-card.json"
+        provider_url = _provider_base_url(provider.agent_card_url)
+        card = await agent.resolve_agent_card(provider_url)
+        client = await agent.a2a_client(provider_url)
 
-        if not provider.agent_card_url.endswith(agent_card_path):
-            raise AssertionError(
-                f"unexpected Agent Card URL: {provider.agent_card_url}"
-            )
+        advertised = {skill.id for skill in card.skills}
+        expected = {case[0] for case in SKILL_CASES}
+        if advertised != expected:
+            raise AssertionError(f"unexpected advertised skills: {sorted(advertised)}")
 
-        provider_base_url = provider.agent_card_url.removesuffix(agent_card_path)
-        agent_card = await agent.resolve_agent_card(provider_base_url)
+        extensions = tuple(card.capabilities.extensions)
+        if len(extensions) != 1:
+            raise AssertionError(f"expected one skill-selection extension, got {len(extensions)}")
+        extension_uri = extensions[0].uri
 
-        print("\nResolved A2A Agent Card:")
-        print(f"  name       : {agent_card.name}")
-        print(f"  skills     : {[skill.id for skill in agent_card.skills]}")
-        print(f"  interfaces : {list(agent_card.supported_interfaces)}")
-
-        advertised_skills = {skill.id for skill in agent_card.skills}
-
-        # AGENT NEBULA EXTENSION:
-        # send_message(provider, skill_id=...) is a Nebula convenience API for
-        # Registry-discovered providers. skill_id is carried by the Nebula
-        # skill-selection A2A extension; a2a-sdk still owns A2A execution.
-        for skill_id, data, expected in SKILL_CASES:
-            if skill_id not in advertised_skills:
-                raise AssertionError(
-                    f"Agent Card does not advertise skill {skill_id!r}"
-                )
-
-            actual = response_text(
-                await agent.send_message(
-                    provider,
-                    data=data,
-                    skill_id=skill_id,
-                )
-            )
-
-            if actual != expected:
-                raise AssertionError(
-                    f"{skill_id}: {actual!r} != {expected!r}"
-                )
-
+        for skill_id, data, expected_text in SKILL_CASES:
+            actual = await _invoke_skill(client, extension_uri, skill_id, data)
+            if actual != expected_text:
+                raise AssertionError(f"{skill_id}: {actual!r} != {expected_text!r}")
             print(f"PASS  discovered provider {skill_id}")
 
-        print(
-            "\nRESULT: registration, Registry discovery, Agent Card "
-            "resolution, and all skill invocations passed"
-        )
-
+        print("RESULT: Registry discovery and all native A2A invocations passed")
     finally:
         await agent.close()
 

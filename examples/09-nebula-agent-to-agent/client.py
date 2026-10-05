@@ -1,113 +1,74 @@
-"""Agent-to-Agent example client.
-
-This client demonstrates the external-client side of the Agent-to-Agent flow:
-
-    Client
-      -> Agent Nebula discovery
-      -> Orchestrator Agent
-      -> Agent Nebula discovery
-      -> Provider Agent
-      -> Orchestrator
-      -> Client
-
-The external client discovers and invokes only the orchestrator. The
-orchestrator is responsible for discovering and invoking the downstream
-provider.
-"""
+"""External native A2A client for the Agent-to-Agent orchestration example."""
+from __future__ import annotations
 
 import asyncio
+import uuid
 from pathlib import Path
 
-from agent_nebula_secureagent import SecureAgent
+from a2a.helpers import get_message_text
+from a2a.types import Message, Part, Role, SendMessageRequest
+from google.protobuf.json_format import ParseDict
+from google.protobuf.struct_pb2 import Struct, Value
 
 from examples.example_paths import config_path
-
+from agent_nebula_secureagent import SecureAgent
 
 HERE = Path(__file__).resolve().parent
-
 ORCHESTRATOR_QUERY = "operations add"
-ORCHESTRATOR_SKILL = "operations.add"
+AGENT_CARD_PATH = "/.well-known/agent-card.json"
+
+
+def _data_part(data: dict[str, object]) -> Part:
+    return Part(data=Value(struct_value=ParseDict(data, Struct())))
+
+
+def _provider_base_url(agent_card_url: str) -> str:
+    if not agent_card_url.endswith(AGENT_CARD_PATH):
+        raise AssertionError(f"unexpected Agent Card URL: {agent_card_url}")
+    return agent_card_url.removesuffix(AGENT_CARD_PATH)
 
 
 async def main() -> None:
-    """Discover the orchestrator and invoke its operations.add skill."""
-
-    # AGENT NEBULA CONFIGURATION:
-    # SecureAgent creates/configures the A2A client environment and enables
-    # Agent Nebula Registry discovery.
+    """Discover and invoke the single-skill orchestrator through native A2A."""
     agent = SecureAgent(
         config=config_path(HERE, "secureagent.conf"),
         nebula_config=config_path(HERE, "nebula.conf"),
     )
-
-    # AGENT NEBULA CONFIGURATION:
-    # Platform composes the official a2a-sdk client from this configuration.
-    agent.use_protocol(
-        "a2a",
-        role="client",
-        config=config_path(HERE, "a2aclient.conf"),
-    )
+    agent.use_protocol("a2a", role="client", config=config_path(HERE, "a2aclient.conf"))
 
     try:
-        # AGENT NEBULA EXTENSION:
-        # Registry discovery is outside A2A. The external client discovers only
-        # the orchestrator; downstream provider discovery belongs to it.
-        agents = await agent.discover(
-            query=ORCHESTRATOR_QUERY,
-        )
+        orchestrators = await agent.discover(query=ORCHESTRATOR_QUERY)
+        if not orchestrators:
+            raise AssertionError("operations orchestrator was not discovered")
+        orchestrator = orchestrators[0]
+        if not orchestrator.agent_card_url:
+            raise AssertionError("orchestrator has no Agent Card URL")
 
-        # Print every discovery result so the example also demonstrates what
-        # Agent Nebula discovery returned before selecting an agent.
-        print(
-            f"DISCOVERY: query={ORCHESTRATOR_QUERY!r} "
-            f"returned {len(agents)} agent(s)"
-        )
+        orchestrator_url = _provider_base_url(orchestrator.agent_card_url)
+        card = await agent.resolve_agent_card(orchestrator_url)
+        if {skill.id for skill in card.skills} != {"operations.add"}:
+            raise AssertionError("unexpected orchestrator Agent Card skills")
 
-        for index, discovered_agent in enumerate(agents, start=1):
-            print(
-                f"  [{index}] "
-                f"name={discovered_agent.display_name!r} "
-                f"id={discovered_agent.agent_id!r}"
+        # The orchestrator has one skill, so no skill-selection extension is
+        # required for the upstream call. Its executor performs downstream discovery.
+        client = await agent.a2a_client(orchestrator_url)
+        request = SendMessageRequest(
+            message=Message(
+                role=Role.ROLE_USER,
+                message_id=str(uuid.uuid4()),
+                parts=[_data_part({"a": 20, "b": 22})],
             )
-
-        if not agents:
-            raise AssertionError(
-                "orchestrator not discovered for query "
-                f"{ORCHESTRATOR_QUERY!r}"
-            )
-
-        orchestrator = agents[0]
-        print(
-            f"SELECTED: name={orchestrator.display_name!r} "
-            f"id={orchestrator.agent_id!r} skill={ORCHESTRATOR_SKILL!r}"
         )
-        print("FLOW: client -> orchestrator -> discovery -> provider -> orchestrator -> client")
+        responses = [response async for response in client.send_message(request)]
+        if len(responses) != 1 or not responses[0].HasField("message"):
+            raise AssertionError(f"unexpected orchestrator response: {responses}")
+        actual = get_message_text(responses[0].message, delimiter=" ")
+        if actual != "sum=42":
+            raise AssertionError(f"unexpected result: {actual!r}")
 
-        # AGENT NEBULA EXTENSION:
-        # skill_id uses Nebula skill selection for the discovered provider. The
-        # underlying message exchange is executed by a2a-sdk.
-        response = await agent.send_message(
-            orchestrator,
-            data={"a": 20, "b": 22},
-            skill_id=ORCHESTRATOR_SKILL,
-        )
-
-        # Validate the final response returned through the complete
-        # client -> orchestrator -> provider chain.
-        text = response[0]["message"]["parts"][0]["text"]
-
-        if text != "sum=42":
-            raise AssertionError(f"unexpected result: {text!r}")
-
-        print(
-            "PASS  client -> orchestrator -> Registry discovery "
-            "-> downstream provider"
-        )
+        print("PASS  client -> orchestrator -> Registry -> provider -> orchestrator")
         print("RESULT: sum=42")
-
     finally:
-        # SecureAgent owns asynchronous transports/resources and should always
-        # be closed explicitly.
         await agent.close()
 
 

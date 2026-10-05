@@ -1,42 +1,24 @@
-"""Agent Nebula registration and discovery."""
+"""Agent Nebula registration and discovery server."""
 from pathlib import Path
 
 from examples.example_paths import config_path
-
 from agent_nebula_secureagent import SecureAgent
+
+from executors import AddExecutor, EchoExecutor, HelloExecutor
 
 HERE = Path(__file__).resolve().parent
 
-# AGENT NEBULA CONFIGURATION:
-# SecureAgent creates the standard A2A agent from configuration and adds
-# Registry registration. A2A protocol handling remains owned by a2a-sdk.
+# Agent Nebula adds Registry/security configuration around the native A2A server.
 agent = SecureAgent(
     config=config_path(HERE, "secureagent.conf"),
-    nebula_config=config_path(HERE, "nebula.conf")
+    nebula_config=config_path(HERE, "nebula.conf"),
 )
-# AGENT NEBULA CONFIGURATION:
-# Compose the official a2a-sdk server stack from the protocol configuration.
 agent.use_protocol("a2a", role="server", config=config_path(HERE, "a2aserver.conf"))
 
-
-# AGENT NEBULA CONFIGURATION:
-# @agent.skill is Nebula's config-driven skill registration API. Platform
-# adapts these handlers to the official a2a-sdk AgentExecutor interface.
-@agent.skill("hello")
-def hello(payload):
-    return {"message": "hello from SecureAgent"}
-
-
-@agent.skill("echo")
-def echo(payload):
-    return {"message": f"echo={payload.get('value', '')}"}
-
-
-@agent.skill("add")
-def add(payload):
-    return {"message": f"sum={int(payload.get('a', 0)) + int(payload.get('b', 0))}"}
-
+# Application behavior remains native a2a-sdk AgentExecutor implementations.
+agent.a2a_skill("hello", HelloExecutor())
+agent.a2a_skill("echo", EchoExecutor())
+agent.a2a_skill("add", AddExecutor())
 
 if __name__ == "__main__":
-    print("START: SecureAgent A2A example server")
     agent.run()
