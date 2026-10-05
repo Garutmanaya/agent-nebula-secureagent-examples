@@ -1,5 +1,9 @@
 """Basic A2A client using the native a2a-sdk client API."""
 
+# -----------------------------------------------------------------------------
+# Imports
+# -----------------------------------------------------------------------------
+
 from __future__ import annotations
 
 import asyncio
@@ -15,14 +19,28 @@ from examples.example_paths import config_path
 
 from agent_nebula_secureagent import SecureAgent
 
+# -----------------------------------------------------------------------------
+# Example configuration
+# -----------------------------------------------------------------------------
+
 HERE = Path(__file__).resolve().parent
 SERVER_URL = "http://localhost:9001/"
+
+
+# -----------------------------------------------------------------------------
+# A2A request helpers
+# -----------------------------------------------------------------------------
 
 
 def _data_part(data: dict[str, object]) -> Part:
     """Build the official A2A v1.0 data part used by this example."""
     value = Value(struct_value=ParseDict(data, Struct()))
     return Part(data=value)
+
+
+# -----------------------------------------------------------------------------
+# Example workflow
+# -----------------------------------------------------------------------------
 
 
 async def main() -> None:
@@ -61,6 +79,10 @@ async def main() -> None:
     finally:
         await agent.close()
 
+
+# -----------------------------------------------------------------------------
+# Application entry point
+# -----------------------------------------------------------------------------
 
 if __name__ == "__main__":
     asyncio.run(main())

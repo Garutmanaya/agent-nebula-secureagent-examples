@@ -10,6 +10,9 @@ from a2a.types import Role
 from google.protobuf.json_format import MessageToDict
 
 
+# -----------------------------------------------------------------------------
+# Request and response helpers
+# -----------------------------------------------------------------------------
 def _request_data(context: RequestContext) -> dict[str, Any]:
     """Read the first standard A2A DataPart from the incoming message."""
     if context.message is None:
@@ -24,7 +27,12 @@ async def _reply(event_queue: EventQueue, text: str) -> None:
     await event_queue.enqueue_event(new_text_message(text, role=Role.ROLE_AGENT))
 
 
+# -----------------------------------------------------------------------------
+# Skill executors
+# -----------------------------------------------------------------------------
 class HelloExecutor(AgentExecutor):
+    """Return a fixed greeting as a native A2A Message."""
+
     async def execute(self, context: RequestContext, event_queue: EventQueue) -> None:
         await _reply(event_queue, "hello from SecureAgent")
 
@@ -33,6 +41,8 @@ class HelloExecutor(AgentExecutor):
 
 
 class EchoExecutor(AgentExecutor):
+    """Echo the value supplied in the request DataPart."""
+
     async def execute(self, context: RequestContext, event_queue: EventQueue) -> None:
         payload = _request_data(context)
         await _reply(event_queue, f"echo={payload.get('value', '')}")
@@ -42,6 +52,8 @@ class EchoExecutor(AgentExecutor):
 
 
 class AddExecutor(AgentExecutor):
+    """Add two integer values supplied in the request DataPart."""
+
     async def execute(self, context: RequestContext, event_queue: EventQueue) -> None:
         payload = _request_data(context)
         await _reply(event_queue, f"sum={int(payload['a']) + int(payload['b'])}")

@@ -1,4 +1,8 @@
 """Verify Example 02 using the native a2a-sdk client and extension mechanism."""
+# -----------------------------------------------------------------------------
+# Imports
+# -----------------------------------------------------------------------------
+
 from __future__ import annotations
 
 import asyncio
@@ -15,6 +19,10 @@ from google.protobuf.struct_pb2 import Struct, Value
 from examples.example_paths import config_path
 from agent_nebula_secureagent import SecureAgent
 
+# -----------------------------------------------------------------------------
+# Example configuration
+# -----------------------------------------------------------------------------
+
 HERE = Path(__file__).resolve().parent
 SERVER_URL = "http://localhost:9002/"
 
@@ -25,14 +33,24 @@ SKILL_CASES = (
 )
 
 
+# -----------------------------------------------------------------------------
+# A2A request helpers
+# -----------------------------------------------------------------------------
+
+
 def _data_part(data: dict[str, object]) -> Part:
+    """Convert a Python mapping to a native A2A DataPart."""
     return Part(data=Value(struct_value=ParseDict(data, Struct())))
 
 
-def _skill_request(extension_uri: str, skill_id: str, data: dict[str, object]):
+def _skill_request(
+    extension_uri: str,
+    skill_id: str,
+    data: dict[str, object],
+) -> tuple[SendMessageRequest, ClientCallContext]:
     """Use the standard A2A extension activation and request metadata fields."""
     metadata = ParseDict({extension_uri: {"skillId": skill_id}}, Struct())
-    context = ClientCallContext(
+    call_context = ClientCallContext(
         service_parameters=ServiceParametersFactory.create(
             [with_a2a_extensions([extension_uri])]
         )
@@ -45,7 +63,12 @@ def _skill_request(extension_uri: str, skill_id: str, data: dict[str, object]):
         ),
         metadata=metadata,
     )
-    return request, context
+    return request, call_context
+
+
+# -----------------------------------------------------------------------------
+# Example workflow
+# -----------------------------------------------------------------------------
 
 
 async def main() -> None:
@@ -55,10 +78,10 @@ async def main() -> None:
     client = await agent.a2a_client(SERVER_URL)
     try:
         card = await agent.resolve_agent_card(SERVER_URL)
-        advertised = {skill.id for skill in card.skills}
-        expected = {case[0] for case in SKILL_CASES}
-        if advertised != expected:
-            raise AssertionError(f"unexpected advertised skills: {sorted(advertised)}")
+        advertised_skill_ids = {skill.id for skill in card.skills}
+        expected_skill_ids = {case[0] for case in SKILL_CASES}
+        if advertised_skill_ids != expected_skill_ids:
+            raise AssertionError(f"unexpected advertised skills: {sorted(advertised_skill_ids)}")
 
         # Example 02 configures one A2A extension during SecureAgent agent creation.
         # The client consumes the URI advertised by the authoritative Agent Card;
@@ -70,7 +93,7 @@ async def main() -> None:
             )
         extension_uri = extensions[0].uri
 
-        print(f"PASS  Agent Card skills: {', '.join(sorted(advertised))}")
+        print(f"PASS  Agent Card skills: {', '.join(sorted(advertised_skill_ids))}")
         for skill_id, data, expected_text in SKILL_CASES:
             request, call_context = _skill_request(extension_uri, skill_id, data)
             responses = [
@@ -92,6 +115,10 @@ async def main() -> None:
     finally:
         await agent.close()
 
+
+# -----------------------------------------------------------------------------
+# Application entry point
+# -----------------------------------------------------------------------------
 
 if __name__ == "__main__":
     asyncio.run(main())

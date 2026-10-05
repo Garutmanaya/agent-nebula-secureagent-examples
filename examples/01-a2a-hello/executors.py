@@ -5,7 +5,12 @@ from a2a.server.events import EventQueue
 from a2a.types import Role
 
 
+# -----------------------------------------------------------------------------
+# Skill executors
+# -----------------------------------------------------------------------------
 class HelloExecutor(AgentExecutor):
+    """Return a fixed greeting as a native A2A Message."""
+
     async def execute(self, context: RequestContext, event_queue: EventQueue) -> None:
         await event_queue.enqueue_event(
             new_text_message("hello from SecureAgent", role=Role.ROLE_AGENT)

@@ -1,4 +1,8 @@
-"""03-a2a-multi-binding A2A server."""
+"""Run Example 03: one A2A agent exposed through three protocol bindings."""
+
+# -----------------------------------------------------------------------------
+# Imports
+# -----------------------------------------------------------------------------
 from pathlib import Path
 
 from examples.example_paths import config_path
@@ -6,6 +10,9 @@ from agent_nebula_secureagent import SecureAgent
 
 from executors import AddExecutor, EchoExecutor, HelloExecutor
 
+# -----------------------------------------------------------------------------
+# Agent configuration and skill registration
+# -----------------------------------------------------------------------------
 HERE = Path(__file__).resolve().parent
 
 agent = SecureAgent(config=config_path(HERE, "secureagent.conf"))
@@ -14,5 +21,8 @@ agent.a2a_skill("hello", HelloExecutor())
 agent.a2a_skill("echo", EchoExecutor())
 agent.a2a_skill("add", AddExecutor())
 
+# -----------------------------------------------------------------------------
+# Application entry point
+# -----------------------------------------------------------------------------
 if __name__ == "__main__":
     agent.run()
