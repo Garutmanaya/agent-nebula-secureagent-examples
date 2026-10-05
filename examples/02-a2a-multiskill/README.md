@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Verify deterministic multi-skill dispatch through the SecureAgent A2A client and server. The server registers `hello`, `echo`, and `add` once through `@agent.skill`. The client resolves the Agent Card, verifies that all three skills are advertised, then explicitly selects and invokes every skill.
+Verify deterministic multi-skill dispatch through the SecureAgent A2A client and server. The server registers `hello`, `echo`, and `add` once through `agent.a2a_skill()`. The client resolves the Agent Card, verifies that all three skills are advertised, then explicitly selects and invokes every skill.
 
 This example is the baseline for subsequent examples: multi-skill behavior is treated as normal agent behavior rather than a special case.
 

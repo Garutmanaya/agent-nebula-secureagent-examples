@@ -21,9 +21,7 @@ Server:
 agent = SecureAgent(config=HERE / "config/secureagent.conf")
 agent.use_protocol("a2a", role="server", config=HERE / "config/a2aserver.conf")
 
-@agent.skill("hello")
-async def hello(payload):
-    return {"message": "hello from SecureAgent", "payload": dict(payload)}
+agent.a2a_skill("hello", HelloExecutor())
 ```
 
 Client:

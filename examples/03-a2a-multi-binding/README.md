@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Verify that one SecureAgent business-skill set is exposed through all three A2A 1.0 protocol bindings supported by Platform: JSON-RPC, HTTP+JSON, and gRPC. Skills are registered once; the protocol adapters provide different wire bindings over the same A2A semantics and dispatcher.
+Verify that one SecureAgent business-skill set is exposed through all three A2A 1.0 protocol bindings supported by Platform: JSON-RPC, HTTP+JSON, and gRPC. Skills are registered once; the configured Platform A2A server exposes the same native `AgentExecutor` skills through each binding.
 
 ## Test coverage
 
