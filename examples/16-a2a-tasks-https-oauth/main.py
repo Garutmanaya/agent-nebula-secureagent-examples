@@ -1,4 +1,8 @@
 """Example 16: native a2a-sdk Message and Task execution through SecureAgent."""
+# -----------------------------------------------------------------------------
+# Imports
+# -----------------------------------------------------------------------------
+
 from pathlib import Path
 
 from a2a.helpers import new_task_from_user_message, new_text_message, new_text_part
@@ -10,8 +14,16 @@ from a2a.types import Role, TaskState
 from examples.example_paths import config_path
 from agent_nebula_secureagent import SecureAgent
 
+# -----------------------------------------------------------------------------
+# Example configuration
+# -----------------------------------------------------------------------------
+
 HERE = Path(__file__).resolve().parent
 
+
+# -----------------------------------------------------------------------------
+# Skill executors
+# -----------------------------------------------------------------------------
 
 class HelloExecutor(AgentExecutor):
     """STANDARD A2A: immediate execution returns one native Message event."""
@@ -68,6 +80,10 @@ class ReportExecutor(AgentExecutor):
         await updater.update_status(TaskState.TASK_STATE_CANCELED)
 
 
+# -----------------------------------------------------------------------------
+# Agent configuration and skill registration
+# -----------------------------------------------------------------------------
+
 # AGENT NEBULA CONFIGURATION: configuration, server composition, and lifecycle
 # remain owned by SecureAgent/Platform; application execution remains native SDK.
 agent = SecureAgent(
@@ -81,6 +97,10 @@ agent.use_protocol("a2a", role="server", config=config_path(HERE, "a2aserver.con
 agent.a2a_skill("hello", HelloExecutor())
 agent.a2a_skill("generate-reports", ReportExecutor())
 
+
+# -----------------------------------------------------------------------------
+# Application entry point
+# -----------------------------------------------------------------------------
 
 if __name__ == "__main__":
     print("START: SecureAgent native A2A Task + HTTPS + OAuth example server")

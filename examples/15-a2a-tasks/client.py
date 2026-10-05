@@ -30,26 +30,25 @@ from agent_nebula_secureagent import SecureAgent
 
 HERE = Path(__file__).resolve().parent
 SERVER_URL = "http://localhost:9015/"
-SKILL_EXTENSION = "https://agentnebula.ai/extensions/a2a/skill-selection/v1"
 
 
 # -----------------------------------------------------------------------------
 # A2A request helpers
 # -----------------------------------------------------------------------------
 
-def _skill_call(skill_id: str) -> tuple[Struct, ClientCallContext]:
+def _skill_call(extension_uri: str, skill_id: str) -> tuple[Struct, ClientCallContext]:
     """Activate the Nebula skill-selection extension using native SDK fields."""
-    metadata = ParseDict({SKILL_EXTENSION: {"skillId": skill_id}}, Struct())
+    metadata = ParseDict({extension_uri: {"skillId": skill_id}}, Struct())
     call_context = ClientCallContext(
         service_parameters=ServiceParametersFactory.create(
-            [with_a2a_extensions([SKILL_EXTENSION])]
+            [with_a2a_extensions([extension_uri])]
         )
     )
     return metadata, call_context
 
 
-async def _send(client, skill_id: str, text: str):
-    metadata, call_context = _skill_call(skill_id)
+async def _send(client, extension_uri: str, skill_id: str, text: str):
+    metadata, call_context = _skill_call(extension_uri, skill_id)
     request = SendMessageRequest(
         message=new_text_message(text, role=Role.ROLE_USER),
         metadata=metadata,
@@ -67,10 +66,15 @@ async def _send(client, skill_id: str, text: str):
 async def main() -> None:
     agent = SecureAgent(config=config_path(HERE, "secureagent.conf"))
     agent.use_protocol("a2a", role="client", config=config_path(HERE, "a2aclient.conf"))
+    card = await agent.resolve_agent_card(SERVER_URL)
+    extensions = tuple(card.capabilities.extensions)
+    if len(extensions) != 1:
+        raise AssertionError(f"expected one skill-selection extension, got {len(extensions)}")
+    extension_uri = extensions[0].uri
     client = await agent.a2a_client(SERVER_URL)
     try:
         # Multi-skill proof #1: this skill owns an immediate native Message result.
-        hello = await _send(client, "hello", "hello")
+        hello = await _send(client, extension_uri, "hello", "hello")
         if not hello.HasField("message"):
             raise AssertionError(f"hello did not return Message: {hello}")
         if get_message_text(hello.message) != "hello from native a2a-sdk":
@@ -78,7 +82,7 @@ async def main() -> None:
         print("PASS  hello -> native Message")
 
         # Multi-skill proof #2: this skill independently owns a native Task lifecycle.
-        report = await _send(client, "generate-reports", "generate reports")
+        report = await _send(client, extension_uri, "generate-reports", "generate reports")
         if not report.HasField("task"):
             raise AssertionError(f"generate-reports did not return Task: {report}")
         task = report.task

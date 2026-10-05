@@ -1,4 +1,8 @@
 """Verify native A2A Message/Task execution after Nebula discovery over HTTPS + OAuth."""
+# -----------------------------------------------------------------------------
+# Imports
+# -----------------------------------------------------------------------------
+
 from __future__ import annotations
 
 import asyncio
@@ -14,24 +18,31 @@ from google.protobuf.struct_pb2 import Struct
 from agent_nebula_secureagent import SecureAgent
 from examples.example_paths import config_path
 
+# -----------------------------------------------------------------------------
+# Example configuration
+# -----------------------------------------------------------------------------
+
 HERE = Path(__file__).resolve().parent
 PROVIDER_NAME = "Native A2A Tasks OAuth Agent"
 DISCOVERY_QUERY = "generate reports"
-SKILL_EXTENSION = "https://agentnebula.ai/extensions/a2a/skill-selection/v1"
 
 
-def _skill_call(skill_id: str) -> tuple[Struct, ClientCallContext]:
-    metadata = ParseDict({SKILL_EXTENSION: {"skillId": skill_id}}, Struct())
+# -----------------------------------------------------------------------------
+# A2A request helpers
+# -----------------------------------------------------------------------------
+
+def _skill_call(extension_uri: str, skill_id: str) -> tuple[Struct, ClientCallContext]:
+    metadata = ParseDict({extension_uri: {"skillId": skill_id}}, Struct())
     call_context = ClientCallContext(
         service_parameters=ServiceParametersFactory.create(
-            [with_a2a_extensions([SKILL_EXTENSION])]
+            [with_a2a_extensions([extension_uri])]
         )
     )
     return metadata, call_context
 
 
-async def _send(client, skill_id: str, text: str):
-    metadata, call_context = _skill_call(skill_id)
+async def _send(client, extension_uri: str, skill_id: str, text: str):
+    metadata, call_context = _skill_call(extension_uri, skill_id)
     request = SendMessageRequest(
         message=new_text_message(text, role=Role.ROLE_USER),
         metadata=metadata,
@@ -41,6 +52,10 @@ async def _send(client, skill_id: str, text: str):
         raise AssertionError(f"{skill_id}: expected one aggregated response, got {len(responses)}")
     return responses[0]
 
+
+# -----------------------------------------------------------------------------
+# Example workflow
+# -----------------------------------------------------------------------------
 
 async def main() -> None:
     # Same Agent Nebula Registry + OAuth profile used by Example 07.
@@ -59,18 +74,25 @@ async def main() -> None:
         provider = next((item for item in found if item.display_name == PROVIDER_NAME), found[0])
         print(f"SELECTED: name={provider.display_name!r} id={provider.agent_id!r}")
 
-        # SecureAgent resolves the discovered Agent Card and applies the configured
-        # HTTPS trust + OAuth profile; operations below remain native a2a-sdk APIs.
-        client = await agent.a2a_client(provider.require_agent_card_location())
+        # AgentCard is authoritative for the skill-selection extension URI.
+        # SecureAgent applies the configured HTTPS trust + OAuth profile; operations
+        # below remain native a2a-sdk APIs.
+        agent_card_location = provider.require_agent_card_location()
+        card = await agent.resolve_agent_card(agent_card_location)
+        extensions = tuple(card.capabilities.extensions)
+        if len(extensions) != 1:
+            raise AssertionError(f"expected one skill-selection extension, got {len(extensions)}")
+        extension_uri = extensions[0].uri
+        client = await agent.a2a_client(agent_card_location)
 
-        hello = await _send(client, "hello", "hello")
+        hello = await _send(client, extension_uri, "hello", "hello")
         if not hello.HasField("message"):
             raise AssertionError(f"hello did not return Message: {hello}")
         if get_message_text(hello.message) != "hello from native a2a-sdk":
             raise AssertionError(f"unexpected hello response: {hello.message}")
         print("PASS  HTTPS + OAuth hello -> native Message")
 
-        report = await _send(client, "generate-reports", "generate reports")
+        report = await _send(client, extension_uri, "generate-reports", "generate reports")
         if not report.HasField("task"):
             raise AssertionError(f"generate-reports did not return Task: {report}")
         task = report.task
@@ -104,6 +126,10 @@ async def main() -> None:
     finally:
         await agent.close()
 
+
+# -----------------------------------------------------------------------------
+# Application entry point
+# -----------------------------------------------------------------------------
 
 if __name__ == "__main__":
     asyncio.run(main())

@@ -176,6 +176,50 @@
     },
     "certificate_profile": "nebula"
   },
+  "example-17": {
+    "directory": "examples/17-a2a-artifacts",
+    "name": "Native A2A Artifacts",
+    "description": "Native a2a-sdk artifact creation and TaskStore persistence.",
+    "init_mode": "basic",
+    "processes": {
+      "server": "main.py",
+      "client": "client.py"
+    },
+    "certificate_profile": "local"
+  },
+  "example-18": {
+    "directory": "examples/18-a2a-streaming",
+    "name": "Native A2A Streaming",
+    "description": "Native a2a-sdk streaming Task status and artifact events.",
+    "init_mode": "basic",
+    "processes": {
+      "server": "main.py",
+      "client": "client.py"
+    },
+    "certificate_profile": "local"
+  },
+  "example-19": {
+    "directory": "examples/19-a2a-push-notifications",
+    "name": "Native A2A Push Notifications",
+    "description": "Native A2A push notification configuration CRUD and callback delivery.",
+    "init_mode": "basic",
+    "processes": {
+      "server": "main.py",
+      "client": "client.py"
+    },
+    "certificate_profile": "local"
+  },
+  "example-20": {
+    "directory": "examples/20-a2a-extended-agent-card",
+    "name": "Native A2A Extended Agent Card",
+    "description": "Authenticated native get_extended_agent_card retrieval of a richer Agent Card.",
+    "init_mode": "tls",
+    "processes": {
+      "server": "main.py",
+      "client": "client.py"
+    },
+    "certificate_profile": "local"
+  },
   "example-23": {
     "directory": "examples/23-a2ui-basic",
     "name": "A2UI Basic on Native A2A",

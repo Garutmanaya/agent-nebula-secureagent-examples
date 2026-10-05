@@ -35,6 +35,11 @@ The suite is intentionally small. Historical examples have been moved to `exampl
 | 13 | [Mutual TLS](examples/13-a2a-mtls/README.md) | Verifies `MutualTlsSecurityScheme` with mandatory client-certificate authentication at the TLS boundary. |
 | 14 | [Multiple Security Schemes](examples/14-a2a-multiple-security/README.md) | Verifies compound A2A security by requiring API key AND HTTP Bearer in one `SecurityRequirement`. |
 | 15 | [Native A2A Tasks](examples/15-a2a-tasks/README.md) | Verifies native `a2a-sdk` Message and Task execution, artifacts, `get_task()`, and `list_tasks()` with application-owned Task lifecycle. |
+| 16 | [Native A2A Tasks + HTTPS + OAuth](examples/16-a2a-tasks-https-oauth/README.md) | Combines native Message/Task execution with Agent Nebula registration/discovery, HTTPS, and OAuth. |
+| 17 | [Native A2A Artifacts](examples/17-a2a-artifacts/README.md) | Verifies native artifact IDs, names, Parts, and TaskStore persistence through `get_task()`. |
+| 18 | [Native A2A Streaming](examples/18-a2a-streaming/README.md) | Verifies `streaming=true` with native Task, status, and artifact update events through `Client.send_message()`. |
+| 19 | [Native A2A Push Notifications](examples/19-a2a-push-notifications/README.md) | Verifies native push configuration create/get/list/delete operations and callback delivery. |
+| 20 | [Native A2A Extended Agent Card](examples/20-a2a-extended-agent-card/README.md) | Verifies authenticated native `get_extended_agent_card()` retrieval of a distinct richer Agent Card. |
 
 ## Verification philosophy
 
