@@ -1,10 +1,18 @@
 """Registry-discovered downstream math provider."""
+# -----------------------------------------------------------------------------
+# Imports
+# -----------------------------------------------------------------------------
+
 from pathlib import Path
 
 from examples.example_paths import config_path
 from agent_nebula_secureagent import SecureAgent
 
 from executors import MathAddExecutor
+
+# -----------------------------------------------------------------------------
+# Agent configuration and skill registration
+# -----------------------------------------------------------------------------
 
 HERE = Path(__file__).resolve().parent
 
@@ -18,6 +26,10 @@ agent.use_protocol(
     config=config_path(HERE, "provider-server.conf"),
 )
 agent.a2a_skill("math.add", MathAddExecutor())
+
+# -----------------------------------------------------------------------------
+# Application entry point
+# -----------------------------------------------------------------------------
 
 if __name__ == "__main__":
     agent.run()

@@ -1,10 +1,18 @@
 """Dual-role A2A orchestrator that discovers its downstream provider."""
+# -----------------------------------------------------------------------------
+# Imports
+# -----------------------------------------------------------------------------
+
 from pathlib import Path
 
 from examples.example_paths import config_path
 from agent_nebula_secureagent import SecureAgent
 
 from executors import OrchestratedAddExecutor
+
+# -----------------------------------------------------------------------------
+# Agent configuration and skill registration
+# -----------------------------------------------------------------------------
 
 HERE = Path(__file__).resolve().parent
 
@@ -25,6 +33,10 @@ agent.use_protocol(
     config=config_path(HERE, "a2aclient.conf"),
 )
 agent.a2a_skill("operations.add", OrchestratedAddExecutor(agent))
+
+# -----------------------------------------------------------------------------
+# Application entry point
+# -----------------------------------------------------------------------------
 
 if __name__ == "__main__":
     agent.run()

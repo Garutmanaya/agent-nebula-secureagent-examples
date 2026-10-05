@@ -1,6 +1,6 @@
 # Example 15 — Native A2A Tasks
 
-This example validates the isolated `server_a2a_sdk` execution path without changing the existing A2A server implementation.
+This example validates native `a2a-sdk` Message and Task execution through the current SecureAgent/Platform A2A server path.
 
 It proves that Agent Nebula can advertise and deterministically dispatch multiple Agent Card skills while the selected application code uses the official `a2a-sdk` execution contract directly.
 

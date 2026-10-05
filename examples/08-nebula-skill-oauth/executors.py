@@ -1,4 +1,8 @@
 """Native a2a-sdk executors for 08-nebula-skill-oauth."""
+# -----------------------------------------------------------------------------
+# Imports
+# -----------------------------------------------------------------------------
+
 from __future__ import annotations
 
 from typing import Any
@@ -9,6 +13,10 @@ from a2a.server.events import EventQueue
 from a2a.types import Role
 from google.protobuf.json_format import MessageToDict
 
+
+# -----------------------------------------------------------------------------
+# A2A request helpers
+# -----------------------------------------------------------------------------
 
 def _request_data(context: RequestContext) -> dict[str, Any]:
     """Return the first standard A2A data part from the request message."""
@@ -24,6 +32,10 @@ async def _reply(event_queue: EventQueue, text: str) -> None:
     """Enqueue one standard A2A agent message."""
     await event_queue.enqueue_event(new_text_message(text, role=Role.ROLE_AGENT))
 
+
+# -----------------------------------------------------------------------------
+# Skill executors
+# -----------------------------------------------------------------------------
 
 class HelloExecutor(AgentExecutor):
     async def execute(self, context: RequestContext, event_queue: EventQueue) -> None:

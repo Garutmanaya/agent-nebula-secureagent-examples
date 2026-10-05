@@ -1,4 +1,8 @@
 """Native a2a-sdk executors for the Agent-to-Agent orchestration example."""
+# -----------------------------------------------------------------------------
+# Imports
+# -----------------------------------------------------------------------------
+
 from __future__ import annotations
 
 import uuid
@@ -17,6 +21,10 @@ AGENT_CARD_PATH = "/.well-known/agent-card.json"
 DOWNSTREAM_QUERY = "math.add"
 DOWNSTREAM_SKILL = "math.add"
 
+
+# -----------------------------------------------------------------------------
+# A2A request helpers
+# -----------------------------------------------------------------------------
 
 def _request_data(context: RequestContext) -> dict[str, Any]:
     """Return the first standard A2A data part from an incoming request."""
@@ -57,6 +65,10 @@ def _skill_request(extension_uri: str, skill_id: str, data: dict[str, Any]):
         ),
     )
 
+
+# -----------------------------------------------------------------------------
+# Skill executors
+# -----------------------------------------------------------------------------
 
 class MathAddExecutor(AgentExecutor):
     """Provide the downstream deterministic math.add skill."""

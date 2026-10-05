@@ -1,9 +1,17 @@
 """Native a2a-sdk executor for Example 10."""
+# -----------------------------------------------------------------------------
+# Imports
+# -----------------------------------------------------------------------------
+
 from a2a.helpers import new_text_message
 from a2a.server.agent_execution import AgentExecutor, RequestContext
 from a2a.server.events import EventQueue
 from a2a.types import Role
 
+
+# -----------------------------------------------------------------------------
+# Skill executors
+# -----------------------------------------------------------------------------
 
 class HelloExecutor(AgentExecutor):
     async def execute(self, context: RequestContext, event_queue: EventQueue) -> None:

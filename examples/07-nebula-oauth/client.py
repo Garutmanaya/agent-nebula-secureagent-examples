@@ -1,4 +1,8 @@
 """Native A2A client for 07-nebula-oauth."""
+# -----------------------------------------------------------------------------
+# Imports
+# -----------------------------------------------------------------------------
+
 from __future__ import annotations
 
 import asyncio
@@ -15,6 +19,10 @@ from google.protobuf.struct_pb2 import Struct, Value
 from examples.example_paths import config_path
 from agent_nebula_secureagent import SecureAgent
 
+# -----------------------------------------------------------------------------
+# Example configuration
+# -----------------------------------------------------------------------------
+
 HERE = Path(__file__).resolve().parent
 PROVIDER_NAME = 'OAuth Protected Registry Agent'
 DISCOVERY_QUERY = 'hello'
@@ -26,6 +34,10 @@ SKILL_CASES = (
     ("add", {"a": 7, "b": 5}, "sum=12"),
 )
 
+
+# -----------------------------------------------------------------------------
+# A2A request helpers
+# -----------------------------------------------------------------------------
 
 def _provider_base_url(agent_card_url: str) -> str:
     """Convert the Registry Agent Card location to its provider base URL."""
@@ -75,6 +87,10 @@ async def _invoke_skill(client, extension_uri: str, skill_id: str, data: dict[st
     return get_message_text(responses[0].message, delimiter=" ")
 
 
+# -----------------------------------------------------------------------------
+# Example workflow
+# -----------------------------------------------------------------------------
+
 async def main() -> None:
     """Discover the provider, resolve its Agent Card, and invoke every skill."""
     agent = SecureAgent(
@@ -114,6 +130,10 @@ async def main() -> None:
     finally:
         await agent.close()
 
+
+# -----------------------------------------------------------------------------
+# Application entry point
+# -----------------------------------------------------------------------------
 
 if __name__ == "__main__":
     asyncio.run(main())

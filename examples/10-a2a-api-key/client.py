@@ -1,4 +1,8 @@
 """Verify API-key authentication through the native a2a-sdk client."""
+# -----------------------------------------------------------------------------
+# Imports
+# -----------------------------------------------------------------------------
+
 from __future__ import annotations
 
 import asyncio
@@ -13,13 +17,25 @@ from google.protobuf.struct_pb2 import Struct, Value
 from examples.example_paths import config_path
 from agent_nebula_secureagent import SecureAgent
 
+# -----------------------------------------------------------------------------
+# Example configuration
+# -----------------------------------------------------------------------------
+
 HERE = Path(__file__).resolve().parent
 SERVER_URL = "https://localhost:9010/"
 
 
+# -----------------------------------------------------------------------------
+# A2A request helpers
+# -----------------------------------------------------------------------------
+
 def _data_part(data: dict[str, object]) -> Part:
     return Part(data=Value(struct_value=ParseDict(data, Struct())))
 
+
+# -----------------------------------------------------------------------------
+# Example workflow
+# -----------------------------------------------------------------------------
 
 async def main() -> None:
     agent = SecureAgent(config=config_path(HERE, "secureagent.conf"))
@@ -50,6 +66,10 @@ async def main() -> None:
     finally:
         await agent.close()
 
+
+# -----------------------------------------------------------------------------
+# Application entry point
+# -----------------------------------------------------------------------------
 
 if __name__ == "__main__":
     asyncio.run(main())

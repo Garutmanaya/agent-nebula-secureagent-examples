@@ -1,4 +1,8 @@
 """Verify Example 15 with the native a2a-sdk client API."""
+# -----------------------------------------------------------------------------
+# Imports
+# -----------------------------------------------------------------------------
+
 from __future__ import annotations
 
 import asyncio
@@ -20,10 +24,18 @@ from google.protobuf.struct_pb2 import Struct
 from examples.example_paths import config_path
 from agent_nebula_secureagent import SecureAgent
 
+# -----------------------------------------------------------------------------
+# Example configuration
+# -----------------------------------------------------------------------------
+
 HERE = Path(__file__).resolve().parent
 SERVER_URL = "http://localhost:9015/"
 SKILL_EXTENSION = "https://agentnebula.ai/extensions/a2a/skill-selection/v1"
 
+
+# -----------------------------------------------------------------------------
+# A2A request helpers
+# -----------------------------------------------------------------------------
 
 def _skill_call(skill_id: str) -> tuple[Struct, ClientCallContext]:
     """Activate the Nebula skill-selection extension using native SDK fields."""
@@ -47,6 +59,10 @@ async def _send(client, skill_id: str, text: str):
         raise AssertionError(f"{skill_id}: expected one aggregated response, got {len(responses)}")
     return responses[0]
 
+
+# -----------------------------------------------------------------------------
+# Example workflow
+# -----------------------------------------------------------------------------
 
 async def main() -> None:
     agent = SecureAgent(config=config_path(HERE, "secureagent.conf"))
@@ -96,6 +112,10 @@ async def main() -> None:
     finally:
         await agent.close()
 
+
+# -----------------------------------------------------------------------------
+# Application entry point
+# -----------------------------------------------------------------------------
 
 if __name__ == "__main__":
     asyncio.run(main())

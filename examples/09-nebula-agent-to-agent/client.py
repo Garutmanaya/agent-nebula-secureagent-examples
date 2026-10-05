@@ -1,4 +1,8 @@
 """External native A2A client for the Agent-to-Agent orchestration example."""
+# -----------------------------------------------------------------------------
+# Imports
+# -----------------------------------------------------------------------------
+
 from __future__ import annotations
 
 import asyncio
@@ -13,10 +17,18 @@ from google.protobuf.struct_pb2 import Struct, Value
 from examples.example_paths import config_path
 from agent_nebula_secureagent import SecureAgent
 
+# -----------------------------------------------------------------------------
+# Example configuration
+# -----------------------------------------------------------------------------
+
 HERE = Path(__file__).resolve().parent
 ORCHESTRATOR_QUERY = "operations add"
 AGENT_CARD_PATH = "/.well-known/agent-card.json"
 
+
+# -----------------------------------------------------------------------------
+# A2A request helpers
+# -----------------------------------------------------------------------------
 
 def _data_part(data: dict[str, object]) -> Part:
     return Part(data=Value(struct_value=ParseDict(data, Struct())))
@@ -27,6 +39,10 @@ def _provider_base_url(agent_card_url: str) -> str:
         raise AssertionError(f"unexpected Agent Card URL: {agent_card_url}")
     return agent_card_url.removesuffix(AGENT_CARD_PATH)
 
+
+# -----------------------------------------------------------------------------
+# Example workflow
+# -----------------------------------------------------------------------------
 
 async def main() -> None:
     """Discover and invoke the single-skill orchestrator through native A2A."""
@@ -71,6 +87,10 @@ async def main() -> None:
     finally:
         await agent.close()
 
+
+# -----------------------------------------------------------------------------
+# Application entry point
+# -----------------------------------------------------------------------------
 
 if __name__ == "__main__":
     asyncio.run(main())

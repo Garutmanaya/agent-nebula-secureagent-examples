@@ -29,9 +29,12 @@ The suite is intentionally small. Historical examples have been moved to `exampl
 | 07 | [Agent Nebula OAuth](examples/07-nebula-oauth/README.md) | Adds OAuth-protected A2A invocation after Registry discovery and verifies every skill. |
 | 08 | [Skill-Level OAuth](examples/08-nebula-skill-oauth/README.md) | Verifies deterministic skill selection and distinct least-privilege OAuth scopes per skill. |
 | 09 | [Agent-to-Agent](examples/09-nebula-agent-to-agent/README.md) | Runs a dual-role SecureAgent that serves A2A while discovering and invoking a downstream Registry provider. |
-| 10 | [API-Key Protected Agent](examples/10-a2a-api-key/README.md) | Reserved for API-key endpoint security; current Platform server composition lacks the required external verifier configuration boundary, so no fake runnable example is provided. |
-| 11 | [A2A + A2UI v1.0 Acceptance](examples/11-a2a-a2ui/README.md) | Verifies multi-skill A2A selection, A2UI v1.0 Agent Card advertisement, complete `SkillResult` preservation, A2UI DataPart output, and ordinary non-A2UI fallback. |
-| 12 | [A2UI v1.0 Actions over A2A](examples/12-a2a-a2ui-actions/README.md) | Verifies renderer-to-agent A2UI `action`, renderer data-model metadata, correlated `actionResponse`, and updated A2UI over standard A2A. |
+| 10 | [API-Key Protected Agent](examples/10-a2a-api-key/README.md) | Verifies an A2A `APIKeySecurityScheme` using an externally configured header credential and native SDK invocation. |
+| 11 | [HTTP Authentication](examples/11-a2a-http-auth/README.md) | Verifies `HTTPAuthSecurityScheme` with an opaque Bearer credential; HTTP Bearer syntax remains distinct from OAuth. |
+| 12 | [OpenID Connect](examples/12-a2a-openid-connect/README.md) | Verifies `OpenIdConnectSecurityScheme` with a locally provisioned test JWT and issuer/audience/signature validation. |
+| 13 | [Mutual TLS](examples/13-a2a-mtls/README.md) | Verifies `MutualTlsSecurityScheme` with mandatory client-certificate authentication at the TLS boundary. |
+| 14 | [Multiple Security Schemes](examples/14-a2a-multiple-security/README.md) | Verifies compound A2A security by requiring API key AND HTTP Bearer in one `SecurityRequirement`. |
+| 15 | [Native A2A Tasks](examples/15-a2a-tasks/README.md) | Verifies native `a2a-sdk` Message and Task execution, artifacts, `get_task()`, and `list_tasks()` with application-owned Task lifecycle. |
 
 ## Verification philosophy
 
