@@ -1,34 +1,23 @@
-"""Application-owned presentation loading for Example 25.
-
-The presenter understands the example's manifest format only. It does not
-interpret A2UI component types or catalogs; those remain A2UI concerns.
-"""
+"""Load application-owned A2UI v1.0 protocol messages from JSON."""
+# -----------------------------------------------------------------------------
+# Imports
+# -----------------------------------------------------------------------------
 from __future__ import annotations
 
 import copy
 import json
 from pathlib import Path
 
-A2UI_VERSION = "v1.0"
-BASIC_CATALOG_ID = "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json"
-
-
-class SkillPresenter:
-    """Create one A2UI surface from an application-owned JSON manifest."""
-
-    def __init__(self, manifest_path: Path, surface_id: str) -> None:
-        self._manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-        self._surface_id = surface_id
-
-    def create_surface(self, data_model: dict[str, object]) -> dict[str, object]:
-        """Bind skill data without interpreting the manifest's components."""
-        manifest = copy.deepcopy(self._manifest)
-        return {
-            "version": A2UI_VERSION,
-            "createSurface": {
-                "surfaceId": self._surface_id,
-                "catalogId": BASIC_CATALOG_ID,
-                "components": manifest["components"],
-                "dataModel": data_model,
-            },
-        }
+# -----------------------------------------------------------------------------
+# Presentation loading
+# -----------------------------------------------------------------------------
+def load_presentation(path: Path, data_model: dict[str, object]) -> dict[str, object]:
+    """Load one complete A2UI message and bind invocation-specific data only."""
+    document = copy.deepcopy(json.loads(path.read_text(encoding="utf-8")))
+    create_surface = document.get("createSurface")
+    if not isinstance(create_surface, dict):
+        raise ValueError(f"{path} must contain one A2UI v1.0 createSurface message")
+    model = dict(create_surface.get("dataModel", {}))
+    model.update(data_model)
+    create_surface["dataModel"] = model
+    return document

@@ -8,20 +8,19 @@ from a2a.server.events import EventQueue
 from agent_nebula_secureagent import SecureAgent
 from examples.example_paths import config_path
 from a2ui_transport import a2ui_part
-from presentation import ForecastPresenter
+from presentation import load_presentation
 
 HERE = Path(__file__).resolve().parent
-PRESENTER = ForecastPresenter(HERE / "presentation.json")
+PRESENTATION = HERE / "presentation.json"
 
 
 class ForecastExecutor(AgentExecutor):
     """Application executor that emits A2UI directly through native a2a-sdk."""
 
     async def execute(self, context: RequestContext, event_queue: EventQueue) -> None:
-        document = PRESENTER.create_surface(
-            region="Northern Virginia",
-            temperature="72°F",
-            conditions="Clear",
+        document = load_presentation(
+            PRESENTATION,
+            {"region": "Northern Virginia", "temperature": "72°F", "conditions": "Clear"},
         )
         await event_queue.enqueue_event(new_message([a2ui_part([document])]))
 

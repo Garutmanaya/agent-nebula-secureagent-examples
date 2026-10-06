@@ -1,4 +1,4 @@
-"""Native a2a-sdk multi-skill invocation shared by CLI and browser clients."""
+"""Native a2a-sdk multi-skill invocation with AgentCard-negotiated A2UI."""
 # -----------------------------------------------------------------------------
 # Imports
 # -----------------------------------------------------------------------------
@@ -20,40 +20,50 @@ from examples.example_paths import config_path
 # Example configuration
 # -----------------------------------------------------------------------------
 SERVER_URL = "http://localhost:9025/"
+BASIC_CATALOG_ID = "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json"
 
 # -----------------------------------------------------------------------------
 # AgentCard / request helpers
 # -----------------------------------------------------------------------------
-def _skill_extension_uri(card) -> str:
-    """Find the non-A2UI dispatch extension advertised by the Agent Card."""
-    candidates: list[str] = []
+def _extension_uris(card) -> tuple[str, str]:
+    """Discover A2UI and skill-selection extensions from AgentCard semantics."""
+    a2ui: list[str] = []
+    dispatch: list[str] = []
     for extension in card.capabilities.extensions:
         params = MessageToDict(extension.params) if extension.HasField("params") else {}
-        if "supportedCatalogIds" not in params:
-            candidates.append(extension.uri)
-    if len(candidates) != 1:
-        raise AssertionError(f"expected one skill-selection extension, got {candidates}")
-    return candidates[0]
+        if "supportedCatalogIds" in params.get("v1.0", {}):
+            a2ui.append(extension.uri)
+        else:
+            dispatch.append(extension.uri)
+    if len(a2ui) != 1 or len(dispatch) != 1:
+        raise AssertionError(f"unexpected AgentCard extensions: a2ui={a2ui}, dispatch={dispatch}")
+    return dispatch[0], a2ui[0]
 
 
-def _skill_call(extension_uri: str, skill_id: str) -> tuple[Struct, ClientCallContext]:
-    """Activate the AgentCard-advertised skill-selection extension."""
-    metadata = ParseDict({extension_uri: {"skillId": skill_id}}, Struct())
+def _request_context(dispatch_uri: str, a2ui_uri: str, skill_id: str) -> tuple[Struct, ClientCallContext]:
+    """Activate both advertised extensions and attach their turn metadata."""
+    metadata = ParseDict(
+        {
+            dispatch_uri: {"skillId": skill_id},
+            "a2uiRendererCapabilities": {"v1.0": {"supportedCatalogIds": [BASIC_CATALOG_ID]}},
+        },
+        Struct(),
+    )
     context = ClientCallContext(
         service_parameters=ServiceParametersFactory.create(
-            [with_a2a_extensions([extension_uri])]
+            [with_a2a_extensions([dispatch_uri, a2ui_uri])]
         )
     )
     return metadata, context
 
 
 async def request_skill(here: Path, skill_id: str, text: str) -> dict:
-    """Invoke one selected skill while leaving Message handling to a2a-sdk."""
+    """Invoke one selected skill through native a2a-sdk with A2UI enabled."""
     agent = SecureAgent(config=config_path(here, "secureagent.conf"), a2ui_config=config_path(here, "a2ui.conf"))
     agent.use_protocol("a2a", role="client", config=config_path(here, "a2aclient.conf"))
     card = await agent.resolve_agent_card(SERVER_URL)
-    extension_uri = _skill_extension_uri(card)
-    metadata, context = _skill_call(extension_uri, skill_id)
+    dispatch_uri, a2ui_uri = _extension_uris(card)
+    metadata, context = _request_context(dispatch_uri, a2ui_uri, skill_id)
     request = SendMessageRequest(message=new_text_message(text, role=Role.ROLE_USER), metadata=metadata)
     client = await agent.a2a_client(SERVER_URL)
     try:

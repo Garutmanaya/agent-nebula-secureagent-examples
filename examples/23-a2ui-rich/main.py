@@ -8,22 +8,28 @@ from a2a.server.events import EventQueue
 from agent_nebula_secureagent import SecureAgent
 from examples.example_paths import config_path
 from a2ui_transport import a2ui_part
-from presentation import WeatherDashboardPresenter
+from presentation import load_presentation
 
 HERE = Path(__file__).resolve().parent
-PRESENTER = WeatherDashboardPresenter(HERE / "presentation.json")
+PRESENTATION = HERE / "presentation.json"
 
 
 class WeatherDashboardExecutor(AgentExecutor):
     """Application executor that publishes a mixed-catalog A2UI surface."""
 
     async def execute(self, context: RequestContext, event_queue: EventQueue) -> None:
-        document = PRESENTER.create_surface(
-            region="Northern Virginia",
-            temperature=72,
-            humidity=48,
-            wind_speed=7,
-            conditions="Clear",
+        document = load_presentation(
+            PRESENTATION,
+            {
+                "region": "Northern Virginia",
+                "status": {"label": "Clear"},
+                "metrics": [
+                    {"label": "Temperature", "value": 72, "unit": "°F"},
+                    {"label": "Humidity", "value": 48, "unit": "%"},
+                    {"label": "Wind", "value": 7, "unit": "mph"},
+                ],
+                "summary": "Clear conditions across Northern Virginia.",
+            },
         )
         await event_queue.enqueue_event(new_message([a2ui_part([document])]))
 

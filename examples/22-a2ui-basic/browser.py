@@ -44,5 +44,5 @@ class Handler(SimpleHTTPRequestHandler):
 if __name__ == "__main__":
     if not (DIST / "index.html").exists():
         raise SystemExit("Shared A2UI browser is not built. Run: make a2ui-web-build")
-    print("Browser validation: http://localhost:9123")
-    ThreadingHTTPServer(("0.0.0.0", 9123), Handler).serve_forever()
+    print("Browser validation: http://localhost:9122")
+    ThreadingHTTPServer(("0.0.0.0", 9122), Handler).serve_forever()

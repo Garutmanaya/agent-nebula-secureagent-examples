@@ -36,6 +36,6 @@ make run example-23 client
 make run example-23 browser
 ```
 
-Open `http://localhost:9124` for the final validation. The surface must visibly combine Basic `Text`/layout components with Rich `StatusBadge` and `MetricGroup` components. A browser rendering failure means the example has not passed, even if the CLI protocol checks succeed.
+Open `http://localhost:9123` for the final validation. The surface must visibly combine Basic `Text`/layout components with Rich `StatusBadge` and `MetricGroup` components. A browser rendering failure means the example has not passed, even if the CLI protocol checks succeed.
 
 The shared browser is intentionally reused unchanged from Example 23. Example 23 validates that catalog composition is data/presentation driven rather than implemented by an example-specific renderer.

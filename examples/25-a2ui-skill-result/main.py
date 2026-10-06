@@ -9,21 +9,19 @@ from agent_nebula_secureagent import SecureAgent
 from examples.example_paths import config_path
 
 from a2ui_transport import a2ui_part
-from presentation import SkillPresenter
+from presentation import load_presentation
 
 HERE = Path(__file__).resolve().parent
-WEATHER = SkillPresenter(HERE / "presentations" / "weather.json", "weather-surface")
-SYSTEM_HEALTH = SkillPresenter(
-    HERE / "presentations" / "system-health.json",
-    "system-health-surface",
-)
+WEATHER_PRESENTATION = HERE / "presentations" / "weather.json"
+SYSTEM_HEALTH_PRESENTATION = HERE / "presentations" / "system-health.json"
 
 
 class WeatherExecutor(AgentExecutor):
     """Native A2A skill whose application result is an A2UI surface."""
 
     async def execute(self, context: RequestContext, event_queue: EventQueue) -> None:
-        document = WEATHER.create_surface(
+        document = load_presentation(
+            WEATHER_PRESENTATION,
             {
                 "region": "Northern Virginia",
                 "temperature": "72°F",
@@ -40,7 +38,8 @@ class SystemHealthExecutor(AgentExecutor):
     """Independent native A2A skill with its own A2UI presentation."""
 
     async def execute(self, context: RequestContext, event_queue: EventQueue) -> None:
-        document = SYSTEM_HEALTH.create_surface(
+        document = load_presentation(
+            SYSTEM_HEALTH_PRESENTATION,
             {
                 "service": "Agent Registry",
                 "status": "Healthy",

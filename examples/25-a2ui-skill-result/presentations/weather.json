@@ -1,10 +1,50 @@
 {
-  "components": [
-    {"id": "root", "component": "Column", "children": ["title", "region", "temperature", "conditions"]},
-    {"id": "title", "component": "Text", "text": "Weather Skill Result", "variant": "body"},
-    {"id": "region", "component": "Text", "text": {"path": "/region"}, "variant": "body"},
-    {"id": "temperature", "component": "Text", "text": {"path": "/temperature"}, "variant": "body"},
-    {"id": "conditions", "component": "Text", "text": {"path": "/conditions"}, "variant": "body"}
-  ],
-  "dataModel": {}
+  "version": "v1.0",
+  "createSurface": {
+    "surfaceId": "weather-surface",
+    "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+    "components": [
+      {
+        "id": "root",
+        "component": "Column",
+        "children": [
+          "title",
+          "region",
+          "temperature",
+          "conditions"
+        ]
+      },
+      {
+        "id": "title",
+        "component": "Text",
+        "text": "Weather Skill Result",
+        "variant": "body"
+      },
+      {
+        "id": "region",
+        "component": "Text",
+        "text": {
+          "path": "/region"
+        },
+        "variant": "body"
+      },
+      {
+        "id": "temperature",
+        "component": "Text",
+        "text": {
+          "path": "/temperature"
+        },
+        "variant": "body"
+      },
+      {
+        "id": "conditions",
+        "component": "Text",
+        "text": {
+          "path": "/conditions"
+        },
+        "variant": "body"
+      }
+    ],
+    "dataModel": {}
+  }
 }

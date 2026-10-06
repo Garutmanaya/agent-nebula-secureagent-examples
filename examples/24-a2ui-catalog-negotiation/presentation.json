@@ -1,0 +1,66 @@
+{
+  "presentations": {
+    "https://agentnebula.ai/catalogs/a2ui/rich/v1/catalog.json": {
+      "version": "v1.0",
+      "createSurface": {
+        "surfaceId": "catalog-negotiation-surface",
+        "catalogId": "https://agentnebula.ai/catalogs/a2ui/rich/v1/catalog.json",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "title",
+              "status"
+            ]
+          },
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "Catalog negotiation"
+          },
+          {
+            "id": "status",
+            "component": "StatusBadge",
+            "catalogId": "https://agentnebula.ai/catalogs/a2ui/rich/v1/catalog.json",
+            "label": "Rich catalog selected",
+            "status": "success"
+          }
+        ],
+        "dataModel": {
+          "selectedCatalogId": "https://agentnebula.ai/catalogs/a2ui/rich/v1/catalog.json"
+        }
+      }
+    },
+    "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json": {
+      "version": "v1.0",
+      "createSurface": {
+        "surfaceId": "catalog-negotiation-surface",
+        "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "title",
+              "status"
+            ]
+          },
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "Catalog negotiation"
+          },
+          {
+            "id": "status",
+            "component": "Text",
+            "text": "Basic catalog selected"
+          }
+        ],
+        "dataModel": {
+          "selectedCatalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json"
+        }
+      }
+    }
+  }
+}

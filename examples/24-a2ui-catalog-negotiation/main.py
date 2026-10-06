@@ -11,13 +11,14 @@ from google.protobuf.json_format import MessageToDict
 
 from agent_nebula_secureagent import SecureAgent
 from examples.example_paths import config_path
-from presentation import create_surface
+from presentation import load_presentation
 
 # -----------------------------------------------------------------------------
 # Example configuration
 # -----------------------------------------------------------------------------
 HERE = Path(__file__).resolve().parent
 A2UI_MIME_TYPE = "application/a2ui+json"
+PRESENTATION = HERE / "presentation.json"
 
 # -----------------------------------------------------------------------------
 # Skill executors
@@ -28,10 +29,13 @@ class DashboardExecutor(AgentExecutor):
     async def execute(self, context: RequestContext, event_queue: EventQueue) -> None:
         if context.message is None:
             raise ValueError("dashboard requires an A2A user message")
-        metadata = MessageToDict(context.message.metadata) if context.message.HasField("metadata") else {}
+        metadata = context.metadata
         renderer = metadata.get("a2uiRendererCapabilities", {}).get("v1.0", {})
         supported = list(renderer.get("supportedCatalogIds", []))
-        document = create_surface(supported)
+        #metadata = MessageToDict(context.message.metadata) if context.message.HasField("metadata") else {}
+        #renderer = metadata.get("a2uiRendererCapabilities", {}).get("v1.0", {})
+        #supported = list(renderer.get("supportedCatalogIds", []))
+        document = load_presentation(PRESENTATION, supported)
         part = new_data_part({"messages": [document]}, media_type=A2UI_MIME_TYPE)
         await event_queue.enqueue_event(new_message([part]))
 

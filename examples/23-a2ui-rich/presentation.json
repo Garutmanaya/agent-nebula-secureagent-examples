@@ -1,57 +1,63 @@
 {
-  "components": [
-    {
-      "id": "root",
-      "component": "Column",
-      "children": [
-        "title",
-        "region",
-        "status",
-        "metrics",
-        "summary"
-      ],
-      "align": "stretch"
-    },
-    {
-      "id": "title",
-      "component": "Text",
-      "text": "Regional Weather Dashboard",
-      "variant": "body"
-    },
-    {
-      "id": "region",
-      "component": "Text",
-      "text": {
-        "path": "/region"
+  "version": "v1.0",
+  "createSurface": {
+    "surfaceId": "weather-dashboard-surface",
+    "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+    "sendDataModel": true,
+    "components": [
+      {
+        "id": "root",
+        "component": "Column",
+        "children": [
+          "title",
+          "region",
+          "status",
+          "metrics",
+          "summary"
+        ],
+        "align": "stretch"
       },
-      "variant": "body"
-    },
-    {
-      "id": "status",
-      "component": "StatusBadge",
-      "catalogId": "https://agentnebula.ai/catalogs/a2ui/rich/v1/catalog.json",
-      "label": {
-        "path": "/status/label"
+      {
+        "id": "title",
+        "component": "Text",
+        "text": "Regional Weather Dashboard",
+        "variant": "body"
       },
-      "status": "success"
-    },
-    {
-      "id": "metrics",
-      "component": "MetricGroup",
-      "catalogId": "https://agentnebula.ai/catalogs/a2ui/rich/v1/catalog.json",
-      "title": "Current conditions",
-      "metrics": {
-        "path": "/metrics"
+      {
+        "id": "region",
+        "component": "Text",
+        "text": {
+          "path": "/region"
+        },
+        "variant": "body"
+      },
+      {
+        "id": "status",
+        "component": "StatusBadge",
+        "catalogId": "https://agentnebula.ai/catalogs/a2ui/rich/v1/catalog.json",
+        "label": {
+          "path": "/status/label"
+        },
+        "status": "success"
+      },
+      {
+        "id": "metrics",
+        "component": "MetricGroup",
+        "catalogId": "https://agentnebula.ai/catalogs/a2ui/rich/v1/catalog.json",
+        "title": "Current conditions",
+        "metrics": {
+          "path": "/metrics"
+        }
+      },
+      {
+        "id": "summary",
+        "component": "Text",
+        "text": {
+          "path": "/summary"
+        },
+        "variant": "body"
       }
-    },
-    {
-      "id": "summary",
-      "component": "Text",
-      "text": {
-        "path": "/summary"
-      },
-      "variant": "body"
-    }
-  ],
-  "dataModel": {}
+    ],
+    "dataModel": {}
+  }
 }

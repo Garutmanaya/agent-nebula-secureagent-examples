@@ -20,6 +20,6 @@ make run example-22 client
 make run example-22 browser
 ```
 
-Open `http://localhost:9123`. The visible Regional Forecast surface is the browser-level acceptance test.
+Open `http://localhost:9122`. The visible Regional Forecast surface is the browser-level acceptance test.
 
 By default `make a2ui-init` reads packages from the sibling `../agent-nebula-a2ui` repository. Set `AGENT_NEBULA_A2UI_SOURCE` when the package repository is elsewhere.
