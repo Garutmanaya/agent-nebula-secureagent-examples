@@ -221,9 +221,9 @@
     "certificate_profile": "local"
   },
   "example-23": {
-    "directory": "examples/23-a2ui-basic",
-    "name": "A2UI Basic on Native A2A",
-    "description": "Application-owned A2UI v1.0 Basic Catalog presentation with shared browser validation over native a2a-sdk execution.",
+    "directory": "examples/23-a2ui-rich",
+    "name": "A2UI Rich",
+    "description": "Application-owned A2UI v1.0 Agent Nebula Rich Catalog presentation over native a2a-sdk.",
     "init_mode": "basic",
     "processes": {
       "server": "main.py",
@@ -233,9 +233,9 @@
     "certificate_profile": "local"
   },
   "example-21": {
-    "directory": "examples/21-a2a-a2ui",
-    "name": "A2A + A2UI v1.0 Acceptance",
-    "description": "A2A skill invocation with A2UI v1.0 output and ordinary non-A2UI fallback.",
+    "directory": "examples/21-a2a-combined",
+    "name": "Combined Native A2A Capabilities",
+    "description": "Combined native A2A streaming, Task, artifact, push-notification, and Extended Agent Card capabilities.",
     "init_mode": "basic",
     "processes": {
       "server": "main.py",
@@ -244,20 +244,9 @@
     "certificate_profile": "local"
   },
   "example-22": {
-    "directory": "examples/22-a2a-a2ui-actions",
-    "name": "A2UI v1.0 Actions over A2A",
-    "description": "renderer-to-agent A2UI actions, correlated action responses, and updated UI state over A2A.",
-    "init_mode": "basic",
-    "processes": {
-      "server": "main.py",
-      "client": "client.py"
-    },
-    "certificate_profile": "local"
-  },
-  "example-24": {
-    "directory": "examples/24-a2ui-rich",
-    "name": "A2UI Mixed Basic + Rich Catalog",
-    "description": "Application-owned mixed A2UI v1.0 Basic and Agent Nebula Rich Catalog presentation with shared browser validation.",
+    "directory": "examples/22-a2ui-basic",
+    "name": "A2UI Basic",
+    "description": "Application-owned A2UI v1.0 Basic Catalog presentation over native a2a-sdk.",
     "init_mode": "basic",
     "processes": {
       "server": "main.py",
@@ -266,10 +255,21 @@
     },
     "certificate_profile": "local"
   },
+  "example-24": {
+    "directory": "examples/24-a2ui-catalog-negotiation",
+    "name": "A2UI Catalog Negotiation",
+    "description": "A2UI v1.0 Agent Card capability advertisement and per-turn renderer catalog negotiation.",
+    "init_mode": "basic",
+    "processes": {
+      "server": "main.py",
+      "client": "client.py"
+    },
+    "certificate_profile": "local"
+  },
   "example-25": {
     "directory": "examples/25-a2ui-skill-result",
     "name": "A2UI Skill Result",
-    "description": "Agent Nebula multi-skill dispatch to native a2a-sdk executors that independently produce application-owned A2UI v1.0 results.",
+    "description": "Multiple native A2A skills independently produce application-owned A2UI v1.0 results.",
     "init_mode": "basic",
     "processes": {
       "server": "main.py",
