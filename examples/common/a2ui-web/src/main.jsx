@@ -9,13 +9,38 @@ function App() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch(`/api/a2ui${window.location.search}`)
-      .then((response) => {
-        if (!response.ok) throw new Error(`A2UI request failed: ${response.status}`);
-        return response.json();
-      })
-      .then((payload) => setMessages(payload.messages ?? []))
-      .catch((reason) => setError(reason.message));
+    async function loadSurface() {
+      const response = await fetch(`/api/a2ui${window.location.search}`);
+      if (!response.ok) throw new Error(`A2UI request failed: ${response.status}`);
+
+      const contentType = response.headers.get("content-type") ?? "";
+      if (!contentType.includes("application/x-ndjson")) {
+        const payload = await response.json();
+        setMessages(payload.messages ?? []);
+        return;
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const {value, done} = await reader.read();
+        buffer += decoder.decode(value ?? new Uint8Array(), {stream: !done});
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          const payload = JSON.parse(line);
+          if (payload.message) setMessages([payload.message]);
+        }
+
+        if (done) break;
+      }
+    }
+
+    loadSurface().catch((reason) => setError(reason.message));
   }, []);
 
   async function handleAction(action, dataModel) {

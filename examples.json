@@ -349,5 +349,17 @@
       "browser": "browser.py"
     },
     "certificate_profile": "local"
+  },
+  "example-32": {
+    "directory": "examples/32-a2ui-streaming",
+    "name": "A2UI + Native A2A Streaming",
+    "description": "Native a2a-sdk streaming Task artifact carrying incremental A2UI v1.0 updates.",
+    "init_mode": "basic",
+    "processes": {
+      "server": "main.py",
+      "client": "client.py",
+      "browser": "browser.py"
+    },
+    "certificate_profile": "local"
   }
 }

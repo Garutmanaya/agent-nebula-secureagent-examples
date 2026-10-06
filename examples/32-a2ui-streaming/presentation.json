@@ -1,0 +1,32 @@
+{
+  "initial": {
+    "version": "v1.0",
+    "createSurface": {
+      "surfaceId": "streaming-traffic-surface",
+      "catalogId": "https://agentnebula.ai/catalogs/a2ui/rich/v1/catalog.json",
+      "sendDataModel": false,
+      "components": [
+        {
+          "id": "root",
+          "component": "BarChart",
+          "title": "Streaming Requests by Region",
+          "subtitle": "Updated by native A2A artifact stream events",
+          "data": {"path": "/series"},
+          "unit": " requests",
+          "orientation": "vertical"
+        }
+      ],
+      "dataModel": {
+        "series": []
+      }
+    }
+  },
+  "update": {
+    "version": "v1.0",
+    "updateDataModel": {
+      "surfaceId": "streaming-traffic-surface",
+      "path": "/series",
+      "value": []
+    }
+  }
+}
