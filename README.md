@@ -14,7 +14,7 @@ agent-nebula-platform
 official protocol SDKs + agent-nebula-sdk
 ```
 
-The suite is intentionally small. Historical examples have been moved to `examples-legacy/` for reference; they are not the supported example/test sequence. New examples are added only after the capability and expected verification matrix are agreed.
+The suite is intentionally scoped to the maintained executable scenarios. New examples are added only after the capability and expected verification matrix are agreed.
 
 ## Current examples
 
@@ -40,6 +40,20 @@ The suite is intentionally small. Historical examples have been moved to `exampl
 | 18 | [Native A2A Streaming](examples/18-a2a-streaming/README.md) | Verifies `streaming=true` with native Task, status, and artifact update events through `Client.send_message()`. |
 | 19 | [Native A2A Push Notifications](examples/19-a2a-push-notifications/README.md) | Verifies native push configuration create/get/list/delete operations and callback delivery. |
 | 20 | [Native A2A Extended Agent Card](examples/20-a2a-extended-agent-card/README.md) | Verifies authenticated native `get_extended_agent_card()` retrieval of a distinct richer Agent Card. |
+| 21 | [Combined Native A2A Capabilities](examples/21-a2a-combined/README.md) | Combines native streaming, Task/artifact, push-notification, and Extended Agent Card capabilities in one scenario. |
+| 22 | [A2UI Basic](examples/22-a2ui-basic/README.md) | Verifies an application-owned A2UI v1.0 Basic Catalog presentation transported through native A2A. |
+| 23 | [A2UI Rich](examples/23-a2ui-rich/README.md) | Verifies an application-owned Agent Nebula Rich Catalog presentation over native A2A. |
+| 24 | [A2UI Catalog Negotiation](examples/24-a2ui-catalog-negotiation/README.md) | Verifies AgentCard A2UI catalog advertisement and per-turn renderer capability negotiation. |
+| 25 | [A2UI Multi-Skill Results](examples/25-a2ui-skill-result/README.md) | Verifies multiple native A2A skills independently producing application-owned A2UI results. |
+| 26 | [A2UI Actions](examples/26-a2ui-actions/README.md) | Verifies browser A2UI actions and synchronized state through the native A2A execution path. |
+| 27 | [A2UI Forms](examples/27-a2ui-forms/README.md) | Verifies browser-edited form state and submission through native A2A execution. |
+| 28 | [A2UI Tables](examples/28-a2ui-tables/README.md) | Verifies a Rich Catalog DataTable driven by application data. |
+| 29 | [A2UI Charts](examples/29-a2ui-charts/README.md) | Verifies a Rich Catalog BarChart driven by application data. |
+| 30 | [A2UI Multi-Skill](examples/30-a2ui-multi-skill/README.md) | Verifies AgentCard-driven skill selection with different A2UI surfaces per skill. |
+| 31 | [A2UI + Native Tasks](examples/31-a2ui-tasks/README.md) | Verifies a native A2A Task whose artifact carries an application-owned A2UI presentation. |
+| 32 | [A2UI + Native Streaming](examples/32-a2ui-streaming/README.md) | Verifies native A2A streaming artifact updates producing visible incremental A2UI updates. |
+| 33 | [A2UI + HTTPS + OAuth](examples/33-a2ui-security/README.md) | Verifies existing Agent Nebula HTTPS/OAuth security protecting native A2A carrying A2UI. |
+| 34 | [A2UI Combined](examples/34-a2ui-combined/README.md) | Combines HTTPS/OAuth, multi-skill dispatch, native Task/streaming, and A2UI without new protocol abstractions. |
 
 ## Verification philosophy
 
@@ -112,7 +126,6 @@ Checked-in configuration remains self-contained with each example under `example
 ```text
 examples/          Current executable scenarios; each owns its config/ templates
 examples.json      Example identity, description, initialization, and process catalog
-examples-legacy/   Historical reference examples
 docs/              Example authoring/configuration/lifecycle documentation
 scripts/           Shared external environment and lifecycle implementation
 ```
@@ -125,7 +138,7 @@ scripts/           Shared external environment and lifecycle implementation
 4. Clients test all skills/bindings/security behavior claimed by the example.
 5. Security verification is never disabled to make an example pass.
 6. Externally issued credentials are provisioned rather than fabricated.
-7. Historical experiments stay in `examples-legacy/`; they do not expand the supported suite.
+7. Maintained examples stay focused on standards-based A2A/A2UI behavior and documented Agent Nebula extensions.
 
 ### Shared external environment
 

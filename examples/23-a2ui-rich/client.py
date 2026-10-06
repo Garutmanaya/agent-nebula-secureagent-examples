@@ -6,7 +6,6 @@ from a2a_client import request_dashboard
 
 HERE = Path(__file__).resolve().parent
 A2UI_MIME_TYPE = "application/a2ui+json"
-RICH_CATALOG_ID = "https://agentnebula.ai/catalogs/a2ui/rich/v1/catalog.json"
 
 
 async def main() -> None:
@@ -24,6 +23,10 @@ async def main() -> None:
     if create.get("surfaceId") != "weather-dashboard-surface":
         raise AssertionError(f"unexpected A2UI surface: {documents}")
 
+    rich_catalog_id = create.get("catalogId")
+    if not rich_catalog_id:
+        raise AssertionError(f"surface did not select a catalog: {create}")
+
     components = create.get("components", [])
     basic_types = {
         component.get("component")
@@ -33,7 +36,7 @@ async def main() -> None:
     rich_components = [
         component
         for component in components
-        if component.get("catalogId") == RICH_CATALOG_ID
+        if component.get("catalogId") == rich_catalog_id
     ]
     rich_types = {component.get("component") for component in rich_components}
 

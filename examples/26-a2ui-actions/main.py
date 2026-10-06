@@ -17,7 +17,11 @@ class CounterExecutor(AgentExecutor):
     """Native A2A executor that handles initial UI and renderer A2UI actions."""
     async def execute(self, context: RequestContext, event_queue: EventQueue) -> None:
         action = self._action(context)
-        document = PRESENTER.create_surface(0) if action is None else PRESENTER.update_count(self._updated_count(context, action))
+        document = (
+            PRESENTER.create_surface(0)
+            if action is None
+            else PRESENTER.update_count(self._updated_count(context, action))
+        )
         await event_queue.enqueue_event(new_message([a2ui_part([document])]))
 
     async def cancel(self, context: RequestContext, event_queue: EventQueue) -> None:

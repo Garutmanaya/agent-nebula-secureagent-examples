@@ -20,32 +20,40 @@ from examples.example_paths import config_path
 # Example configuration
 # -----------------------------------------------------------------------------
 SERVER_URL = "http://localhost:9025/"
-BASIC_CATALOG_ID = "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json"
 
 # -----------------------------------------------------------------------------
 # AgentCard / request helpers
 # -----------------------------------------------------------------------------
-def _extension_uris(card) -> tuple[str, str]:
+def _extension_uris(card) -> tuple[str, str, list[str]]:
     """Discover A2UI and skill-selection extensions from AgentCard semantics."""
-    a2ui: list[str] = []
+    a2ui: list[tuple[str, list[str]]] = []
     dispatch: list[str] = []
     for extension in card.capabilities.extensions:
         params = MessageToDict(extension.params) if extension.HasField("params") else {}
-        if "supportedCatalogIds" in params.get("v1.0", {}):
-            a2ui.append(extension.uri)
+        catalogs = params.get("v1.0", {}).get("supportedCatalogIds")
+        if isinstance(catalogs, list):
+            a2ui.append((extension.uri, [str(item) for item in catalogs]))
         else:
             dispatch.append(extension.uri)
     if len(a2ui) != 1 or len(dispatch) != 1:
         raise AssertionError(f"unexpected AgentCard extensions: a2ui={a2ui}, dispatch={dispatch}")
-    return dispatch[0], a2ui[0]
+    a2ui_uri, catalogs = a2ui[0]
+    if not catalogs:
+        raise AssertionError("A2UI extension advertises no supported catalogs")
+    return dispatch[0], a2ui_uri, catalogs
 
 
-def _request_context(dispatch_uri: str, a2ui_uri: str, skill_id: str) -> tuple[Struct, ClientCallContext]:
+def _request_context(
+    dispatch_uri: str,
+    a2ui_uri: str,
+    skill_id: str,
+    supported_catalogs: list[str],
+) -> tuple[Struct, ClientCallContext]:
     """Activate both advertised extensions and attach their turn metadata."""
     metadata = ParseDict(
         {
             dispatch_uri: {"skillId": skill_id},
-            "a2uiRendererCapabilities": {"v1.0": {"supportedCatalogIds": [BASIC_CATALOG_ID]}},
+            "a2uiRendererCapabilities": {"v1.0": {"supportedCatalogIds": supported_catalogs}},
         },
         Struct(),
     )
@@ -62,8 +70,13 @@ async def request_skill(here: Path, skill_id: str, text: str) -> dict:
     agent = SecureAgent(config=config_path(here, "secureagent.conf"), a2ui_config=config_path(here, "a2ui.conf"))
     agent.use_protocol("a2a", role="client", config=config_path(here, "a2aclient.conf"))
     card = await agent.resolve_agent_card(SERVER_URL)
-    dispatch_uri, a2ui_uri = _extension_uris(card)
-    metadata, context = _request_context(dispatch_uri, a2ui_uri, skill_id)
+    dispatch_uri, a2ui_uri, supported_catalogs = _extension_uris(card)
+    metadata, context = _request_context(
+        dispatch_uri,
+        a2ui_uri,
+        skill_id,
+        supported_catalogs,
+    )
     request = SendMessageRequest(message=new_text_message(text, role=Role.ROLE_USER), metadata=metadata)
     client = await agent.a2a_client(SERVER_URL)
     try:

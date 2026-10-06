@@ -20,21 +20,24 @@ from examples.example_paths import config_path
 # Example configuration
 # -----------------------------------------------------------------------------
 SERVER_URL = "http://localhost:9022/"
-BASIC_CATALOG_ID = "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json"
 
 # -----------------------------------------------------------------------------
 # AgentCard / request helpers
 # -----------------------------------------------------------------------------
-def _a2ui_extension_uri(card) -> str:
+def _a2ui_capability(card) -> tuple[str, list[str]]:
     """Find the A2UI extension from its advertised v1.0 catalog parameters."""
-    candidates: list[str] = []
+    candidates: list[tuple[str, list[str]]] = []
     for extension in card.capabilities.extensions:
         params = MessageToDict(extension.params) if extension.HasField("params") else {}
-        if "supportedCatalogIds" in params.get("v1.0", {}):
-            candidates.append(extension.uri)
+        catalogs = params.get("v1.0", {}).get("supportedCatalogIds")
+        if isinstance(catalogs, list):
+            candidates.append((extension.uri, [str(item) for item in catalogs]))
     if len(candidates) != 1:
         raise AssertionError(f"expected one A2UI extension, got {candidates}")
-    return candidates[0]
+    extension_uri, catalogs = candidates[0]
+    if not catalogs:
+        raise AssertionError("A2UI extension advertises no supported catalogs")
+    return extension_uri, catalogs
 
 
 async def request_forecast(here: Path, text: str = "show forecast") -> dict:
@@ -42,9 +45,9 @@ async def request_forecast(here: Path, text: str = "show forecast") -> dict:
     agent = SecureAgent(config=config_path(here, "secureagent.conf"), a2ui_config=config_path(here, "a2ui.conf"))
     agent.use_protocol("a2a", role="client", config=config_path(here, "a2aclient.conf"))
     card = await agent.resolve_agent_card(SERVER_URL)
-    extension_uri = _a2ui_extension_uri(card)
+    extension_uri, supported_catalogs = _a2ui_capability(card)
     metadata = ParseDict(
-        {"a2uiRendererCapabilities": {"v1.0": {"supportedCatalogIds": [BASIC_CATALOG_ID]}}},
+        {"a2uiRendererCapabilities": {"v1.0": {"supportedCatalogIds": supported_catalogs}}},
         Struct(),
     )
     context = ClientCallContext(

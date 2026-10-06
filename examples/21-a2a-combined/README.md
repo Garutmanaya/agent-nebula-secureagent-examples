@@ -1,5 +1,25 @@
 # Example 21 — Combined Native A2A Capabilities
 
-This example combines the native A2A capabilities introduced by the preceding task-oriented examples. SecureAgent owns configuration and server composition; the application uses `a2a-sdk` directly for Task execution, streaming events, artifacts, push-notification configuration, and Extended Agent Card retrieval.
+## Purpose
 
-It intentionally does not introduce a SecureAgent Task, artifact, streaming, push, or extended-card API.
+Combines the native A2A capabilities introduced in Examples 15–20 in one server: Task lifecycle, artifacts, streaming, push notifications, and Extended Agent Card retrieval. The application continues to use official `a2a-sdk` types; SecureAgent supplies composition and configuration.
+
+## Flow
+
+```text
+client -> AgentCard -> native A2A operation -> AgentExecutor
+                                      |
+                                      +-> Task / artifacts / streaming
+                                      +-> push configuration
+                                      +-> Extended Agent Card
+```
+
+## Run
+
+```bash
+make init example-21
+make run example-21 server
+make run example-21 client
+```
+
+The client validates each combined capability and exits non-zero on failure.

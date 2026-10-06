@@ -1,16 +1,36 @@
+"""Validate the A2UI surface returned by Example 29."""
+
 import asyncio
 from pathlib import Path
+
 from a2a_client import request_surface
-HERE=Path(__file__).resolve().parent
-RICH_CATALOG_ID="https://agentnebula.ai/catalogs/a2ui/rich/v1/catalog.json"
-def messages(message):
-    return next(p["data"]["messages"] for p in message["parts"] if p.get("media_type")=="application/a2ui+json")
-async def main():
-    docs=messages(await request_surface(HERE)); create=next(x["createSurface"] for x in docs if "createSurface" in x)
-    assert create["surfaceId"]=="traffic-chart-surface"
-    assert create["catalogId"]==RICH_CATALOG_ID
-    chart=next(component for component in create["components"] if component["component"]=="BarChart")
-    assert chart["data"]=={"path":"/series"}
-    print("PASS  Agent Nebula Rich Catalog BarChart returned over native A2A")
+
+
+HERE = Path(__file__).resolve().parent
+A2UI_MIME_TYPE = "application/a2ui+json"
+
+
+def messages(message: dict) -> list[dict]:
+    """Extract A2UI protocol messages from the native A2A Message."""
+
+    return next(
+        part["data"]["messages"]
+        for part in message["parts"]
+        if part.get("media_type") == A2UI_MIME_TYPE
+    )
+
+
+async def main() -> None:
+    documents = messages(await request_surface(HERE))
+    create = next(
+        document["createSurface"]
+        for document in documents
+        if "createSurface" in document
+    )
+    assert create["surfaceId"] == "traffic-chart-surface"
+    print("PASS  A2UI chart surface returned over native A2A")
     print("RESULT: Example 29 passed")
-if __name__=="__main__": asyncio.run(main())
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

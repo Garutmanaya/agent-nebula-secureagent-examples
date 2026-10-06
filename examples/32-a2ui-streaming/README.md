@@ -1,24 +1,29 @@
 # Example 32 — A2UI + Native A2A Streaming
 
-Demonstrates native `a2a-sdk` streaming with application-owned A2UI v1.0 protocol messages carried by Task artifact updates.
+## Purpose
 
-The application emits one `createSurface` message followed by three `updateDataModel` messages through native `TaskUpdater.add_artifact(...)` streaming events. SecureAgent does not implement a separate A2UI streaming abstraction.
+Verifies native `a2a-sdk` Task streaming with incremental A2UI artifact updates. Each A2A artifact event is forwarded by the browser bridge as it arrives, allowing the persistent A2UI `MessageProcessor` to update the existing chart surface visibly.
+
+## Flow
 
 ```text
-A2A request
-    |
-    v
-native AgentExecutor / TaskUpdater
-    |
-    +-- WORKING
-    +-- artifact update: createSurface
-    +-- artifact update: updateDataModel
-    +-- artifact update: updateDataModel
-    +-- artifact update: updateDataModel
-    +-- COMPLETED
-             |
-             v
-        A2UI renderer
+Task WORKING
+  -> artifact createSurface
+  -> artifact updateDataModel #1
+  -> artifact updateDataModel #2
+  -> artifact updateDataModel #3
+Task COMPLETED
 ```
 
-Run the server, client, and browser through the repository `make run example-32 ...` targets. Browser validation is available at `http://localhost:9132`.
+The stream is native A2A streaming; the browser transport only forwards received A2UI protocol messages incrementally. Catalog IDs are discovered from the AgentCard.
+
+## Run
+
+```bash
+make init example-32
+make run example-32 server
+make run example-32 client
+make run example-32 browser
+```
+
+Open `http://localhost:9132` and verify that the chart updates incrementally rather than appearing only in its final state.

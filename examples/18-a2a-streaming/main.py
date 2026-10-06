@@ -28,16 +28,33 @@ class StreamingExecutor(AgentExecutor):
         if context.current_task is None:
             await event_queue.enqueue_event(task)
         updater = TaskUpdater(event_queue, task.id, task.context_id)
-        await updater.update_status(TaskState.TASK_STATE_WORKING, new_text_message("stream started", context_id=task.context_id, task_id=task.id))
+        await updater.update_status(
+            TaskState.TASK_STATE_WORKING,
+            new_text_message(
+                "stream started",
+                context_id=task.context_id,
+                task_id=task.id,
+            ),
+        )
         for index, text in enumerate(("chunk one", "chunk two", "chunk three"), start=1):
-            await updater.add_artifact([new_text_part(text)], artifact_id="streamed-report", name="streamed-report", append=index > 1, last_chunk=index == 3)
+            await updater.add_artifact(
+                [new_text_part(text)],
+                artifact_id="streamed-report",
+                name="streamed-report",
+                append=index > 1,
+                last_chunk=index == 3,
+            )
             await asyncio.sleep(0.05)
         await updater.complete(new_text_message("stream complete", context_id=task.context_id, task_id=task.id))
 
     async def cancel(self, context: RequestContext, event_queue: EventQueue) -> None:
         if context.task_id is None or context.context_id is None:
             raise ValueError("task cancellation requires task_id and context_id")
-        await TaskUpdater(event_queue, context.task_id, context.context_id).update_status(TaskState.TASK_STATE_CANCELED)
+        await TaskUpdater(
+            event_queue,
+            context.task_id,
+            context.context_id,
+        ).update_status(TaskState.TASK_STATE_CANCELED)
 
 # -----------------------------------------------------------------------------
 # Agent configuration and skill registration

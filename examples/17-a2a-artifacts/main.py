@@ -36,7 +36,11 @@ class ArtifactExecutor(AgentExecutor):
     async def cancel(self, context: RequestContext, event_queue: EventQueue) -> None:
         if context.task_id is None or context.context_id is None:
             raise ValueError("task cancellation requires task_id and context_id")
-        await TaskUpdater(event_queue, context.task_id, context.context_id).update_status(TaskState.TASK_STATE_CANCELED)
+        await TaskUpdater(
+            event_queue,
+            context.task_id,
+            context.context_id,
+        ).update_status(TaskState.TASK_STATE_CANCELED)
 
 # -----------------------------------------------------------------------------
 # Agent configuration and skill registration

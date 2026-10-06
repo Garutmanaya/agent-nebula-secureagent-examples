@@ -24,38 +24,44 @@ from examples.example_paths import config_path
 # -----------------------------------------------------------------------------
 
 SERVER_URL = "http://localhost:9031/"
-BASIC_CATALOG_ID = "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json"
-RICH_CATALOG_ID = "https://agentnebula.ai/catalogs/a2ui/rich/v1/catalog.json"
 
 
 # -----------------------------------------------------------------------------
 # AgentCard / A2UI extension discovery
 # -----------------------------------------------------------------------------
 
-def discover_a2ui_extension(card) -> str:
+def discover_a2ui_extension(card) -> tuple[str, list[str]]:
     """Discover the A2UI extension from its advertised semantic parameters."""
 
-    matches: list[str] = []
+    matches: list[tuple[str, list[str]]] = []
 
     for extension in card.capabilities.extensions:
         params = MessageToDict(extension.params) if extension.HasField("params") else {}
-        if "supportedCatalogIds" in params.get("v1.0", {}):
-            matches.append(extension.uri)
+        catalogs = params.get("v1.0", {}).get("supportedCatalogIds")
+        if isinstance(catalogs, list):
+            matches.append((extension.uri, [str(item) for item in catalogs]))
 
     if len(matches) != 1:
         raise AssertionError(f"expected one A2UI extension, got {matches}")
 
-    return matches[0]
+    extension_uri, catalogs = matches[0]
+    if not catalogs:
+        raise AssertionError("A2UI extension advertises no supported catalogs")
+
+    return extension_uri, catalogs
 
 
-def request_context(a2ui_uri: str) -> tuple[Struct, ClientCallContext]:
+def request_context(
+    a2ui_uri: str,
+    supported_catalogs: list[str],
+) -> tuple[Struct, ClientCallContext]:
     """Activate A2UI and advertise the browser/client Rich catalog capability."""
 
     metadata = ParseDict(
         {
             "a2uiRendererCapabilities": {
                 "v1.0": {
-                    "supportedCatalogIds": [BASIC_CATALOG_ID, RICH_CATALOG_ID],
+                    "supportedCatalogIds": supported_catalogs,
                 }
             }
         },
@@ -87,8 +93,8 @@ async def request_report_task(here: Path) -> dict:
     )
 
     card = await agent.resolve_agent_card(SERVER_URL)
-    a2ui_uri = discover_a2ui_extension(card)
-    metadata, context = request_context(a2ui_uri)
+    a2ui_uri, supported_catalogs = discover_a2ui_extension(card)
+    metadata, context = request_context(a2ui_uri, supported_catalogs)
 
     request = SendMessageRequest(
         message=new_text_message("generate service report", role=Role.ROLE_USER),

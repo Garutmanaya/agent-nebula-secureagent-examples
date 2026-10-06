@@ -17,8 +17,20 @@ async def main() -> None:
     create = next(item["createSurface"] for item in initial if "createSurface" in item)
     assert create["surfaceId"] == "counter-surface" and create["sendDataModel"] is True
     print("PASS  application returned an interactive A2UI surface")
-    action = {"name": "counter.increment", "surfaceId": "counter-surface", "sourceComponentId": "increment", "timestamp": "2026-10-04T12:00:00-04:00", "context": {"delta": 1}}
-    updated = extract_messages(await send_action(HERE, action, {"version": "v1.0", "surfaces": {"counter-surface": {"count": 0}}}))
+    action = {
+        "name": "counter.increment",
+        "surfaceId": "counter-surface",
+        "sourceComponentId": "increment",
+        "timestamp": "2026-10-04T12:00:00-04:00",
+        "context": {"delta": 1},
+    }
+    updated = extract_messages(
+        await send_action(
+            HERE,
+            action,
+            {"version": "v1.0", "surfaces": {"counter-surface": {"count": 0}}},
+        )
+    )
     update = next(item["updateDataModel"] for item in updated if "updateDataModel" in item)
     assert update == {"surfaceId": "counter-surface", "path": "/count", "value": 1}
     print("PASS  renderer A2UI action reached the native AgentExecutor over A2A")

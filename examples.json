@@ -220,18 +220,6 @@
     },
     "certificate_profile": "local"
   },
-  "example-23": {
-    "directory": "examples/23-a2ui-rich",
-    "name": "A2UI Rich",
-    "description": "Application-owned A2UI v1.0 Agent Nebula Rich Catalog presentation over native a2a-sdk.",
-    "init_mode": "basic",
-    "processes": {
-      "server": "main.py",
-      "client": "client.py",
-      "browser": "browser.py"
-    },
-    "certificate_profile": "local"
-  },
   "example-21": {
     "directory": "examples/21-a2a-combined",
     "name": "Combined Native A2A Capabilities",
@@ -247,6 +235,18 @@
     "directory": "examples/22-a2ui-basic",
     "name": "A2UI Basic",
     "description": "Application-owned A2UI v1.0 Basic Catalog presentation over native a2a-sdk.",
+    "init_mode": "basic",
+    "processes": {
+      "server": "main.py",
+      "client": "client.py",
+      "browser": "browser.py"
+    },
+    "certificate_profile": "local"
+  },
+  "example-23": {
+    "directory": "examples/23-a2ui-rich",
+    "name": "A2UI Rich",
+    "description": "Application-owned A2UI v1.0 Agent Nebula Rich Catalog presentation over native a2a-sdk.",
     "init_mode": "basic",
     "processes": {
       "server": "main.py",

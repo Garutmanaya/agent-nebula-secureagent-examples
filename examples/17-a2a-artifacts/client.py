@@ -24,7 +24,14 @@ async def main() -> None:
     agent.use_protocol("a2a", role="client", config=config_path(HERE, "a2aclient.conf"))
     client = await agent.a2a_client(SERVER_URL)
     try:
-        responses = [event async for event in client.send_message(SendMessageRequest(message=new_text_message("build artifacts", role=Role.ROLE_USER)))]
+        responses = [
+            event
+            async for event in client.send_message(
+                SendMessageRequest(
+                    message=new_text_message("build artifacts", role=Role.ROLE_USER)
+                )
+            )
+        ]
         task = responses[-1].task
         if task.status.state != TaskState.TASK_STATE_COMPLETED:
             raise AssertionError("artifact task did not complete")

@@ -24,7 +24,14 @@ async def main() -> None:
     agent.use_protocol("a2a", role="client", config=config_path(HERE, "a2aclient.conf"))
     client = await agent.a2a_client(SERVER_URL)
     try:
-        events = [event async for event in client.send_message(SendMessageRequest(message=new_text_message("stream report", role=Role.ROLE_USER)))]
+        events = [
+            event
+            async for event in client.send_message(
+                SendMessageRequest(
+                    message=new_text_message("stream report", role=Role.ROLE_USER)
+                )
+            )
+        ]
         kinds = []
         chunks = []
         final_state = None

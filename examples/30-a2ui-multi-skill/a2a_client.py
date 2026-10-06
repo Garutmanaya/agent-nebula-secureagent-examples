@@ -24,9 +24,6 @@ from examples.example_paths import config_path
 # Constants
 # -----------------------------------------------------------------------------
 
-RICH_CATALOG_ID = (
-    "https://agentnebula.ai/catalogs/a2ui/rich/v1/catalog.json"
-)
 SERVER_URL = "http://localhost:9030/"
 
 
@@ -38,6 +35,7 @@ def discover_extensions(card, need_dispatch: bool = False):
     """Discover A2UI and skill-selection extensions from the AgentCard."""
 
     a2ui_extensions = []
+    a2ui_catalogs = []
     other_extensions = []
 
     for extension in card.capabilities.extensions:
@@ -53,6 +51,7 @@ def discover_extensions(card, need_dispatch: bool = False):
 
         if supported_catalogs is not None:
             a2ui_extensions.append(extension.uri)
+            a2ui_catalogs.append([str(item) for item in supported_catalogs])
         else:
             other_extensions.append(extension.uri)
 
@@ -73,7 +72,10 @@ def discover_extensions(card, need_dispatch: bool = False):
         else None
     )
 
-    return a2ui_extensions[0], dispatch_uri
+    if not a2ui_catalogs[0]:
+        raise AssertionError("A2UI extension advertises no supported catalogs")
+
+    return a2ui_extensions[0], a2ui_catalogs[0], dispatch_uri
 
 
 async def discover_skills(here: Path) -> list[dict]:
@@ -124,7 +126,7 @@ async def request_surface(here: Path, skill_id: str) -> dict:
 
     try:
         card = await agent.resolve_agent_card(SERVER_URL)
-        a2ui_uri, dispatch_uri = discover_extensions(
+        a2ui_uri, supported_catalogs, dispatch_uri = discover_extensions(
             card,
             need_dispatch=True,
         )
@@ -136,7 +138,7 @@ async def request_surface(here: Path, skill_id: str) -> dict:
                 },
                 "a2uiRendererCapabilities": {
                     "v1.0": {
-                        "supportedCatalogIds": [RICH_CATALOG_ID],
+                        "supportedCatalogIds": supported_catalogs,
                     }
                 },
             },

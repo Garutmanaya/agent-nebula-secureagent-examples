@@ -47,7 +47,13 @@ async def main() -> None:
         if set(requirement.schemes) != {"api_key", "http_bearer"}:
             raise AssertionError("Agent Card must require API key AND HTTP Bearer")
         client = await agent.a2a_client(SERVER_URL)
-        request = SendMessageRequest(message=Message(role=Role.ROLE_USER, message_id=str(uuid.uuid4()), parts=[_data_part({"name": "Agent Nebula"})]))
+        request = SendMessageRequest(
+            message=Message(
+                role=Role.ROLE_USER,
+                message_id=str(uuid.uuid4()),
+                parts=[_data_part({"name": "Agent Nebula"})],
+            )
+        )
         responses = [event async for event in client.send_message(request)]
         if len(responses) != 1 or not responses[0].HasField("message"):
             raise AssertionError(f"expected one Message response: {responses}")

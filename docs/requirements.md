@@ -660,4 +660,4 @@ like normal a2a-sdk / A2UI code?
         boundary is probably correct
 ```
 
-This contract governs the Examples 01-14 revalidation and the subsequent migration of Solutions, Explorer, Playground, and Studio. After those migrations are complete, use Section 25 as the cleanup contract for SecureAgent and Platform.
+This contract governs the maintained Examples 01–34 and the subsequent migration of Solutions, Explorer, Playground, and Studio. Examples 31–34 specifically validate A2UI composition with native Tasks, streaming, HTTPS/OAuth security, and combined multi-skill execution. After application migrations are complete, use Section 25 as the cleanup contract for SecureAgent and Platform.

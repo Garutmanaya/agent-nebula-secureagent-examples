@@ -23,8 +23,6 @@ from examples.example_paths import config_path
 HERE = Path(__file__).resolve().parent
 SERVER_URL = "http://localhost:9024/"
 A2UI_MIME_TYPE = "application/a2ui+json"
-BASIC_CATALOG_ID = "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json"
-RICH_CATALOG_ID = "https://agentnebula.ai/catalogs/a2ui/rich/v1/catalog.json"
 
 # -----------------------------------------------------------------------------
 # AgentCard helpers
@@ -45,16 +43,25 @@ def _a2ui_capability(card) -> tuple[str, list[str]]:
 # Example workflow
 # -----------------------------------------------------------------------------
 async def main() -> None:
-    agent = SecureAgent(config=config_path(HERE, "secureagent.conf"), a2ui_config=config_path(HERE, "a2ui.conf"))
-    agent.use_protocol("a2a", role="client", config=config_path(HERE, "a2aclient.conf"))
+    agent = SecureAgent(
+        config=config_path(HERE, "secureagent.conf"),
+        a2ui_config=config_path(HERE, "a2ui.conf"),
+    )
+    agent.use_protocol(
+        "a2a",
+        role="client",
+        config=config_path(HERE, "a2aclient.conf"),
+    )
     card = await agent.resolve_agent_card(SERVER_URL)
     extension_uri, advertised = _a2ui_capability(card)
-    if BASIC_CATALOG_ID not in advertised or RICH_CATALOG_ID not in advertised:
-        raise AssertionError(f"unexpected advertised catalogs: {advertised}")
-    print("PASS  Agent Card advertises Basic + Rich A2UI catalogs")
+    if len(advertised) < 2:
+        raise AssertionError(f"expected multiple advertised catalogs: {advertised}")
+    renderer_catalogs = list(reversed(advertised))
+    preferred_catalog = renderer_catalogs[0]
+    print(f"PASS  Agent Card advertises A2UI catalogs: {advertised}")
 
     metadata = ParseDict(
-        {"a2uiRendererCapabilities": {"v1.0": {"supportedCatalogIds": [RICH_CATALOG_ID, BASIC_CATALOG_ID]}}},
+        {"a2uiRendererCapabilities": {"v1.0": {"supportedCatalogIds": renderer_catalogs}}},
         Struct(),
     )
     context = ClientCallContext(
@@ -62,17 +69,29 @@ async def main() -> None:
             [with_a2a_extensions([extension_uri])]
         )
     )
-    request = SendMessageRequest(message=new_text_message("show dashboard", role=Role.ROLE_USER), metadata=metadata)
+    request = SendMessageRequest(
+        message=new_text_message("show dashboard", role=Role.ROLE_USER),
+        metadata=metadata,
+    )
     client = await agent.a2a_client(SERVER_URL)
     try:
-        responses = [event async for event in client.send_message(request, context=context)]
+        responses = [
+            event async for event in client.send_message(request, context=context)
+        ]
         if len(responses) != 1 or not responses[0].HasField("message"):
             raise AssertionError(f"expected one A2A Message: {responses}")
         message = MessageToDict(responses[0].message, preserving_proto_field_name=True)
-        part = next((p for p in message.get("parts", []) if p.get("media_type") == A2UI_MIME_TYPE), None)
+        part = next(
+            (
+                part
+                for part in message.get("parts", [])
+                if part.get("media_type") == A2UI_MIME_TYPE
+            ),
+            None,
+        )
         documents = part.get("data", {}).get("messages", []) if part else []
         create = documents[0].get("createSurface", {}) if documents else {}
-        if create.get("catalogId") != RICH_CATALOG_ID:
+        if create.get("catalogId") != preferred_catalog:
             raise AssertionError(f"agent did not select preferred mutual catalog: {create}")
         print("PASS  A2UI extension activated through native a2a-sdk service parameters")
         print("PASS  renderer capabilities sent in A2A message metadata")

@@ -1,6 +1,24 @@
 # Example 28 — A2UI Tables
 
-Application-owned complete A2UI v1.0 JSON is transported in native A2A `DataPart` payloads and rendered by the shared `@a2ui/web_core` browser. The Agent Nebula Rich Catalog provides the `DataTable` component used by this example. The table definition stays entirely in `presentation.json`; runtime rows are supplied through the A2UI data model.
+## Purpose
+
+Demonstrates a structured table using the Agent Nebula Rich Catalog `DataTable` component. Application data is bound into application-owned `presentation.json`; Python does not construct a parallel UI component model.
+
+## Flow
+
+```text
+AgentCard A2UI capability -> native A2A request -> InventoryExecutor
+                                                |
+                                                v
+                                  presentation.json + row data
+                                                |
+                                                v
+                                   A2UI DataPart -> DataTable
+```
+
+Catalog identifiers used by the client are discovered from the AgentCard.
+
+## Run
 
 ```bash
 make init example-28
@@ -9,4 +27,4 @@ make run example-28 client
 make run example-28 browser
 ```
 
-Browser: `http://localhost:9128`.
+Open `http://localhost:9128` for browser validation.

@@ -189,9 +189,9 @@ If `createSurface.sendDataModel` is enabled, the renderer can return synchronize
 
 ## Tables and charts
 
-A2UI catalogs define what component names are legal. The official Basic Catalog provides general layout, text, input, and control primitives rather than specialized table/chart components. Example 28 therefore expresses a table as `Column -> Row -> Text` in JSON. The common renderer may present a validated homogeneous row structure using table styling without changing the wire document.
+Examples 28 and 29 use components declared by the Agent Nebula Rich Catalog. Example 28 renders structured application data with `DataTable`; Example 29 renders application data with `BarChart`. The component definitions remain in application-owned JSON presentation files. Python binds business data and transports the resulting A2UI messages; it does not construct a second component model.
 
-Example 29 follows the same rule: it demonstrates a simple data-driven bar-chart presentation using Basic Catalog primitives. A production graphical chart should use a custom catalog that declares a chart component and a renderer that registers the corresponding implementation. The server must not emit an undeclared `Chart` component merely because the desired presentation is a chart.
+The client discovers the A2UI extension and advertised catalog IDs from the AgentCard instead of duplicating catalog URI constants in Python.
 
 ## Multi-skill
 
@@ -265,5 +265,17 @@ This code is shared presentation infrastructure only. It is not part of SecureAg
 10. Incremental result
    application loads update JSON -> updateDataModel/updateComponents -> A2A -> existing surface
 ```
+
+
+## Native Tasks, streaming, and security
+
+Examples 31–34 verify that A2UI composes with native A2A lifecycle and Agent Nebula security without adding alternate abstractions:
+
+- Example 31 carries A2UI in a native Task artifact and exposes the actual Task metadata in browser validation.
+- Example 32 carries incremental A2UI messages in native streaming artifact updates and forwards each update to the persistent browser `MessageProcessor` as it arrives.
+- Example 33 applies the existing HTTPS/OAuth A2A security path to a request carrying A2UI; there is no A2UI-specific security layer.
+- Example 34 combines HTTPS/OAuth, AgentCard-driven multi-skill dispatch, native Task/streaming behavior, and A2UI presentation in one agent.
+
+Across these examples, the AgentCard remains authoritative for A2UI extension discovery and advertised catalog IDs. Native `a2a-sdk` types own Message, Task, Artifact, status, and streaming semantics.
 
 The architectural invariant is: **A2A transports and dispatches; A2UI describes UI; the application owns UI JSON and business behavior; the renderer owns rendering; SecureAgent does not duplicate any of those protocol APIs.**

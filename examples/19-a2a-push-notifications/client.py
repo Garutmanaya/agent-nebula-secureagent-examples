@@ -9,7 +9,14 @@ from pathlib import Path
 from fastapi import FastAPI, Request
 import uvicorn
 from a2a.helpers import new_text_message
-from a2a.types import (DeleteTaskPushNotificationConfigRequest, GetTaskPushNotificationConfigRequest, ListTaskPushNotificationConfigsRequest, Role, SendMessageRequest, TaskPushNotificationConfig)
+from a2a.types import (
+    DeleteTaskPushNotificationConfigRequest,
+    GetTaskPushNotificationConfigRequest,
+    ListTaskPushNotificationConfigsRequest,
+    Role,
+    SendMessageRequest,
+    TaskPushNotificationConfig,
+)
 from agent_nebula_secureagent import SecureAgent
 from examples.example_paths import config_path
 
@@ -56,13 +63,24 @@ async def main() -> None:
             raise AssertionError(f"expected initial Task event, got {first}")
         task_id = first.task.id
         callback_host = os.environ.get("AGENT_HOSTNAME") or "localhost"
-        created = await client.create_task_push_notification_config(TaskPushNotificationConfig(id="example-19", task_id=task_id, url=f"http://{callback_host}:{CALLBACK_PORT}/a2a/push", token=CALLBACK_TOKEN))
+        created = await client.create_task_push_notification_config(
+            TaskPushNotificationConfig(
+                id="example-19",
+                task_id=task_id,
+                url=f"http://{callback_host}:{CALLBACK_PORT}/a2a/push",
+                token=CALLBACK_TOKEN,
+            )
+        )
         if created.id != "example-19":
             raise AssertionError(f"unexpected push config: {created}")
-        fetched = await client.get_task_push_notification_config(GetTaskPushNotificationConfigRequest(task_id=task_id, id=created.id))
+        fetched = await client.get_task_push_notification_config(
+            GetTaskPushNotificationConfigRequest(task_id=task_id, id=created.id)
+        )
         if fetched.url != created.url:
             raise AssertionError("get push config mismatch")
-        listed = await client.list_task_push_notification_configs(ListTaskPushNotificationConfigsRequest(task_id=task_id, page_size=10))
+        listed = await client.list_task_push_notification_configs(
+            ListTaskPushNotificationConfigsRequest(task_id=task_id, page_size=10)
+        )
         if created.id not in {item.id for item in listed.configs}:
             raise AssertionError("list push configs did not contain created config")
         print("PASS  native create/get/list push notification configuration")
@@ -75,7 +93,9 @@ async def main() -> None:
         if not notifications:
             raise AssertionError("no push notification callback was delivered")
         print(f"PASS  native push callback delivery ({len(notifications)} notification(s))")
-        await client.delete_task_push_notification_config(DeleteTaskPushNotificationConfigRequest(task_id=task_id, id=created.id))
+        await client.delete_task_push_notification_config(
+            DeleteTaskPushNotificationConfigRequest(task_id=task_id, id=created.id)
+        )
         print("PASS  native delete push notification configuration")
         print("RESULT: Example 19 native A2A push notification verification passed")
     finally:

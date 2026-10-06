@@ -1,11 +1,21 @@
 # Example 30 — A2UI Multi-Skill
 
-The browser discovers the agent's skills from the AgentCard and presents them as clickable A2UI choices. Selecting a skill sends an A2UI `skill.select` action; the browser bridge validates the selected ID against the AgentCard and invokes that skill through the existing Agent Nebula skill-selection extension. Each native A2A skill then returns its own application-owned A2UI JSON surface.
+## Purpose
 
-- `inventory` → Rich `DataTable`
-- `traffic` → Rich `BarChart`
+Verifies interactive AgentCard-driven skill selection. The browser discovers the advertised skills, renders selectable choices, and invokes the selected skill through the existing Agent Nebula skill-selection extension. Each skill owns its own A2UI presentation.
 
-Skill-selection and A2UI extension URIs are discovered from the AgentCard and activated with native a2a-sdk service parameters.
+## Flow
+
+```text
+AgentCard skills -> selection surface -> skill.select action
+                                      -> skill-selection extension
+                                      -> selected AgentExecutor
+                                      -> selected-skill-surface
+```
+
+A2UI remains presentation/action protocol; it does not replace A2A skill dispatch. Catalog IDs and extension URIs are discovered from the AgentCard.
+
+## Run
 
 ```bash
 make init example-30
@@ -14,4 +24,4 @@ make run example-30 client
 make run example-30 browser
 ```
 
-Open `http://localhost:9130` and select either advertised skill.
+Open `http://localhost:9130` and switch repeatedly between the advertised skills. The previous result surface is removed before the next result surface is created.

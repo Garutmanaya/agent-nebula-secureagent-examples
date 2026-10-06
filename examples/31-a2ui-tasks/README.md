@@ -1,26 +1,21 @@
 # Example 31 — A2UI + Native A2A Tasks
 
-This example proves that A2UI presentation output can be carried by a native
-`a2a-sdk` Task artifact without introducing a SecureAgent task or A2UI result
-abstraction.
+## Purpose
 
-The application owns the native `AgentExecutor`, `TaskUpdater`, Task lifecycle,
-business data, and `presentation.json`. SecureAgent provides configuration and
-A2A/A2UI composition. The A2UI JSON is transported in a native A2A `DataPart`
-inside the Task artifact.
+Verifies that application-owned A2UI can be carried by a native `a2a-sdk` Task artifact. `TaskUpdater` owns the native Task lifecycle; the application artifact carries the A2UI DataPart. No SecureAgent Task/result abstraction is introduced.
+
+## Flow
 
 ```text
-A2A request
-    -> native AgentExecutor
-    -> native Task / WORKING
-    -> native Artifact
-         -> A2UI DataPart
-              -> createSurface / Rich DataTable
-    -> native Task / COMPLETED
-    -> browser renderer
+SendMessage -> AgentExecutor -> TaskUpdater(WORKING)
+                            -> native Artifact[A2UI DataPart]
+                            -> TaskUpdater(COMPLETED)
+                            -> browser renders Task metadata + report
 ```
 
-Run:
+The browser exposes the actual Task ID, state, and artifact name so the example visibly proves native Task semantics in addition to rendering the report. Catalog IDs are discovered from the AgentCard.
+
+## Run
 
 ```bash
 make init example-31
