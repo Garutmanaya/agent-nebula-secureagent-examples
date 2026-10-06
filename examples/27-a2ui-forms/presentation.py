@@ -1,45 +1,29 @@
-"""Application-owned A2UI presentation for the contact form example."""
-
+"""Load application-owned complete A2UI v1.0 protocol messages from JSON."""
+# -----------------------------------------------------------------------------
+# Imports
+# -----------------------------------------------------------------------------
 from __future__ import annotations
-
 import copy
 import json
 from pathlib import Path
 from typing import Any
 
-A2UI_VERSION = "v1.0"
-BASIC_CATALOG = "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json"
 SURFACE_ID = "contact-form-surface"
 
-
+# -----------------------------------------------------------------------------
+# Presentation loading
+# -----------------------------------------------------------------------------
 class ContactFormPresenter:
-    """Load the JSON manifest and produce standard A2UI v1.0 messages."""
-
-    def __init__(self, manifest_path: Path) -> None:
-        self._manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    """Load complete protocol documents; Python only binds runtime values."""
+    def __init__(self, path: Path) -> None:
+        self._documents = json.loads(path.read_text(encoding="utf-8"))
 
     def create_surface(self) -> dict[str, Any]:
-        """Create the initial form surface from the application manifest."""
-        manifest = copy.deepcopy(self._manifest)
-        return {
-            "version": A2UI_VERSION,
-            "createSurface": {
-                "surfaceId": SURFACE_ID,
-                "catalogId": BASIC_CATALOG,
-                "sendDataModel": True,
-                "components": manifest["components"],
-                "dataModel": manifest.get("dataModel", {}),
-            },
-        }
+        document = copy.deepcopy(self._documents["initial"])
 
-    @staticmethod
-    def update_result(result: str) -> dict[str, Any]:
-        """Update only the result while preserving browser-entered values."""
-        return {
-            "version": A2UI_VERSION,
-            "updateDataModel": {
-                "surfaceId": SURFACE_ID,
-                "path": "/result",
-                "value": result,
-            },
-        }
+        return document
+
+    def update_result(self, value: str) -> dict[str, Any]:
+        document = copy.deepcopy(self._documents["update"])
+        document["updateDataModel"]["value"] = value
+        return document

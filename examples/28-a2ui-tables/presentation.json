@@ -1,0 +1,23 @@
+{
+  "version": "v1.0",
+  "createSurface": {
+    "surfaceId": "inventory-table-surface",
+    "catalogId": "https://agentnebula.ai/catalogs/a2ui/rich/v1/catalog.json",
+    "sendDataModel": false,
+    "components": [
+      {
+        "id": "root",
+        "component": "DataTable",
+        "title": "Service Inventory",
+        "columns": [
+          {"key": "item", "label": "Service", "align": "start"},
+          {"key": "region", "label": "Region", "align": "start"},
+          {"key": "available", "label": "Available", "align": "end"}
+        ],
+        "rows": {"path": "/rows"},
+        "emptyMessage": "No inventory available"
+      }
+    ],
+    "dataModel": {}
+  }
+}

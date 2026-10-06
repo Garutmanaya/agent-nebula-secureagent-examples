@@ -1,13 +1,99 @@
 {
-  "components": [
-    {"id": "root", "component": "Column", "children": ["title", "instructions", "name_input", "email_input", "submit_button", "result"]},
-    {"id": "title", "component": "Text", "text": "Contact Form", "variant": "body"},
-    {"id": "instructions", "component": "Text", "text": "Enter a name and email address, then submit the form."},
-    {"id": "name_input", "component": "TextField", "label": "Name", "value": {"path": "/name"}, "variant": "shortText", "placeholder": "Ada Lovelace"},
-    {"id": "email_input", "component": "TextField", "label": "Email", "value": {"path": "/email"}, "variant": "shortText", "placeholder": "ada@example.com"},
-    {"id": "submit_label", "component": "Text", "text": "Submit"},
-    {"id": "submit_button", "component": "Button", "child": "submit_label", "variant": "primary", "action": {"event": {"name": "contact.submit", "context": {"name": {"path": "/name"}, "email": {"path": "/email"}}}}},
-    {"id": "result", "component": "Text", "text": {"path": "/result"}}
-  ],
-  "dataModel": {"name": "", "email": "", "result": "Waiting for form submission."}
+  "initial": {
+    "version": "v1.0",
+    "createSurface": {
+      "surfaceId": "contact-form-surface",
+      "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+      "sendDataModel": true,
+      "components": [
+        {
+          "id": "root",
+          "component": "Column",
+          "children": [
+            "title",
+            "instructions",
+            "name_input",
+            "email_input",
+            "submit_button",
+            "result"
+          ]
+        },
+        {
+          "id": "title",
+          "component": "Text",
+          "text": "Contact Form",
+          "variant": "body"
+        },
+        {
+          "id": "instructions",
+          "component": "Text",
+          "text": "Enter a name and email address, then submit the form."
+        },
+        {
+          "id": "name_input",
+          "component": "TextField",
+          "label": "Name",
+          "value": {
+            "path": "/name"
+          },
+          "variant": "shortText",
+          "placeholder": "Ada Lovelace"
+        },
+        {
+          "id": "email_input",
+          "component": "TextField",
+          "label": "Email",
+          "value": {
+            "path": "/email"
+          },
+          "variant": "shortText",
+          "placeholder": "ada@example.com"
+        },
+        {
+          "id": "submit_label",
+          "component": "Text",
+          "text": "Submit"
+        },
+        {
+          "id": "submit_button",
+          "component": "Button",
+          "child": "submit_label",
+          "variant": "primary",
+          "action": {
+            "event": {
+              "name": "contact.submit",
+              "context": {
+                "name": {
+                  "path": "/name"
+                },
+                "email": {
+                  "path": "/email"
+                }
+              }
+            }
+          }
+        },
+        {
+          "id": "result",
+          "component": "Text",
+          "text": {
+            "path": "/result"
+          }
+        }
+      ],
+      "dataModel": {
+        "name": "",
+        "email": "",
+        "result": "Waiting for form submission."
+      }
+    }
+  },
+  "update": {
+    "version": "v1.0",
+    "updateDataModel": {
+      "surfaceId": "contact-form-surface",
+      "path": "/result",
+      "value": ""
+    }
+  }
 }

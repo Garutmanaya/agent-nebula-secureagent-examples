@@ -9,7 +9,6 @@ from typing import Any
 from a2a.helpers import new_message
 from a2a.server.agent_execution import AgentExecutor, RequestContext
 from a2a.server.events import EventQueue
-from google.protobuf.json_format import MessageToDict
 
 from agent_nebula_secureagent import SecureAgent
 from examples.example_paths import config_path
@@ -63,8 +62,7 @@ class ContactFormExecutor(AgentExecutor):
         if context.message is None:
             raise ValueError("form action requires an A2A message")
 
-        payload = MessageToDict(context.message, preserving_proto_field_name=True)
-        client_model = payload.get("metadata", {}).get("a2uiClientDataModel", {})
+        client_model = context.metadata.get("a2uiClientDataModel", {})
         surface_model = client_model.get("surfaces", {}).get(SURFACE_ID, {})
         name = str(surface_model.get("name", "")).strip()
         email = str(surface_model.get("email", "")).strip()

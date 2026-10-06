@@ -6,7 +6,6 @@ from typing import Any
 from a2a.helpers import new_message
 from a2a.server.agent_execution import AgentExecutor, RequestContext
 from a2a.server.events import EventQueue
-from google.protobuf.json_format import MessageToDict
 from agent_nebula_secureagent import SecureAgent
 from examples.example_paths import config_path
 from a2ui_transport import a2ui_messages, a2ui_part
@@ -43,8 +42,7 @@ class CounterExecutor(AgentExecutor):
     def _updated_count(context: RequestContext, action: Mapping[str, Any]) -> int:
         current = 0
         if context.message is not None:
-            payload = MessageToDict(context.message, preserving_proto_field_name=True)
-            client_model = payload.get("metadata", {}).get("a2uiClientDataModel", {})
+            client_model = context.metadata.get("a2uiClientDataModel", {})
             current = int(client_model.get("surfaces", {}).get(SURFACE_ID, {}).get("count", 0))
         action_context = action.get("context", {})
         delta = action_context.get("delta", 1) if isinstance(action_context, Mapping) else 1

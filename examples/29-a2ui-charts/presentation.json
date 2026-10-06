@@ -1,0 +1,20 @@
+{
+  "version": "v1.0",
+  "createSurface": {
+    "surfaceId": "traffic-chart-surface",
+    "catalogId": "https://agentnebula.ai/catalogs/a2ui/rich/v1/catalog.json",
+    "sendDataModel": false,
+    "components": [
+      {
+        "id": "root",
+        "component": "BarChart",
+        "title": "Requests by Region",
+        "subtitle": "Current request volume",
+        "data": {"path": "/series"},
+        "unit": " requests",
+        "orientation": "vertical"
+      }
+    ],
+    "dataModel": {}
+  }
+}

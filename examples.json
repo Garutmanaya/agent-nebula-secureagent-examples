@@ -301,5 +301,41 @@
       "browser": "browser.py"
     },
     "certificate_profile": "local"
+  },
+  "example-28": {
+    "directory": "examples/28-a2ui-tables",
+    "name": "A2UI Tables",
+    "description": "Structured tabular presentation",
+    "init_mode": "basic",
+    "processes": {
+      "server": "main.py",
+      "client": "client.py",
+      "browser": "browser.py"
+    },
+    "certificate_profile": "local"
+  },
+  "example-29": {
+    "directory": "examples/29-a2ui-charts",
+    "name": "A2UI Charts",
+    "description": "Chart presentation driven by application data",
+    "init_mode": "basic",
+    "processes": {
+      "server": "main.py",
+      "client": "client.py",
+      "browser": "browser.py"
+    },
+    "certificate_profile": "local"
+  },
+  "example-30": {
+    "directory": "examples/30-a2ui-multi-skill",
+    "name": "A2UI Multi-Skill",
+    "description": "Different skills producing different A2UI surfaces",
+    "init_mode": "basic",
+    "processes": {
+      "server": "main.py",
+      "client": "client.py",
+      "browser": "browser.py"
+    },
+    "certificate_profile": "local"
   }
 }

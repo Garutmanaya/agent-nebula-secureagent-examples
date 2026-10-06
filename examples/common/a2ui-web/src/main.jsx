@@ -9,7 +9,7 @@ function App() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch("/api/a2ui")
+    fetch(`/api/a2ui${window.location.search}`)
       .then((response) => {
         if (!response.ok) throw new Error(`A2UI request failed: ${response.status}`);
         return response.json();

@@ -1,26 +1,29 @@
-"""Application-owned A2UI presentation for the interactive counter."""
+"""Load application-owned complete A2UI v1.0 protocol messages from JSON."""
+# -----------------------------------------------------------------------------
+# Imports
+# -----------------------------------------------------------------------------
 from __future__ import annotations
 import copy
 import json
 from pathlib import Path
 from typing import Any
-A2UI_VERSION = "v1.0"
-BASIC_CATALOG = "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json"
+
 SURFACE_ID = "counter-surface"
 
+# -----------------------------------------------------------------------------
+# Presentation loading
+# -----------------------------------------------------------------------------
 class CounterPresenter:
-    """Load the JSON manifest and create standard A2UI v1.0 messages."""
-    def __init__(self, manifest_path: Path) -> None:
-        self._manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    """Load complete protocol documents; Python only binds runtime values."""
+    def __init__(self, path: Path) -> None:
+        self._documents = json.loads(path.read_text(encoding="utf-8"))
 
     def create_surface(self, count: int) -> dict[str, Any]:
-        """Create the initial surface; component semantics stay in JSON."""
-        manifest = copy.deepcopy(self._manifest)
-        data_model = manifest.get("dataModel", {})
-        data_model["count"] = count
-        return {"version": A2UI_VERSION, "createSurface": {"surfaceId": SURFACE_ID, "catalogId": BASIC_CATALOG, "sendDataModel": True, "components": manifest["components"], "dataModel": data_model}}
+        document = copy.deepcopy(self._documents["initial"])
+        document["createSurface"]["dataModel"]["count"] = count
+        return document
 
-    @staticmethod
-    def update_count(count: int) -> dict[str, Any]:
-        """Return a standard incremental A2UI data-model update."""
-        return {"version": A2UI_VERSION, "updateDataModel": {"surfaceId": SURFACE_ID, "path": "/count", "value": count}}
+    def update_count(self, value: int) -> dict[str, Any]:
+        document = copy.deepcopy(self._documents["update"])
+        document["updateDataModel"]["value"] = value
+        return document
