@@ -361,5 +361,29 @@
       "browser": "browser.py"
     },
     "certificate_profile": "local"
+  },
+  "example-33": {
+    "directory": "examples/33-a2ui-security",
+    "name": "A2UI + HTTPS + OAuth",
+    "description": "Existing Agent Nebula HTTPS/OAuth security protecting native A2A carrying A2UI v1.0.",
+    "init_mode": "oauth-nebula",
+    "processes": {
+      "server": "main.py",
+      "client": "client.py",
+      "browser": "browser.py"
+    },
+    "certificate_profile": "nebula"
+  },
+  "example-34": {
+    "directory": "examples/34-a2ui-combined",
+    "name": "A2UI Combined",
+    "description": "HTTPS + OAuth + multi-skill native Task/streaming + A2UI without new protocol abstractions.",
+    "init_mode": "oauth-nebula",
+    "processes": {
+      "server": "main.py",
+      "client": "client.py",
+      "browser": "browser.py"
+    },
+    "certificate_profile": "nebula"
   }
 }

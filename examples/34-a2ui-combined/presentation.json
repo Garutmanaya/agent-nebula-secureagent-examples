@@ -1,0 +1,34 @@
+{
+  "initial": {
+    "version": "v1.0",
+    "createSurface": {
+      "surfaceId": "combined-a2ui-surface",
+      "catalogId": "https://agentnebula.ai/catalogs/a2ui/rich/v1/catalog.json",
+      "sendDataModel": false,
+      "components": [
+        {
+          "id": "root",
+          "component": "BarChart",
+          "title": "Combined Secure A2UI Stream",
+          "subtitle": "HTTPS + OAuth + skill dispatch + native Task streaming",
+          "data": {
+            "path": "/series"
+          },
+          "unit": " requests",
+          "orientation": "vertical"
+        }
+      ],
+      "dataModel": {
+        "series": []
+      }
+    }
+  },
+  "update": {
+    "version": "v1.0",
+    "updateDataModel": {
+      "surfaceId": "combined-a2ui-surface",
+      "path": "/series",
+      "value": []
+    }
+  }
+}
