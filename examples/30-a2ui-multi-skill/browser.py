@@ -1,16 +1,215 @@
 from __future__ import annotations
-import asyncio,json
-from http.server import SimpleHTTPRequestHandler,ThreadingHTTPServer
+
+# -----------------------------------------------------------------------------
+# Imports
+# -----------------------------------------------------------------------------
+
+import asyncio
+import json
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import parse_qs,urlparse
-from a2a_client import request_surface
-HERE=Path(__file__).resolve().parent; DIST=HERE.parents[1]/"examples"/"common"/"a2ui-web"/"dist"
-def extract(m): return next(p["data"]["messages"] for p in m["parts"] if p.get("media_type")=="application/a2ui+json")
+from urllib.parse import urlparse
+
+from a2a_client import discover_skills, request_surface
+from presentation import load_presentation
+
+
+# -----------------------------------------------------------------------------
+# Paths / constants
+# -----------------------------------------------------------------------------
+
+HERE = Path(__file__).resolve().parent
+DIST = HERE.parents[1] / "examples" / "common" / "a2ui-web" / "dist"
+
+HOST = "0.0.0.0"
+PORT = 9130
+
+A2UI_MEDIA_TYPE = "application/a2ui+json"
+A2UI_SURFACE_PATH = "/api/a2ui"
+A2UI_ACTION_PATH = "/api/a2ui/action"
+
+SKILL_SELECT_ACTION = "skill.select"
+RESULT_SURFACE_ID = "selected-skill-surface"
+
+
+# -----------------------------------------------------------------------------
+# A2UI helpers
+# -----------------------------------------------------------------------------
+
+def extract_a2ui_messages(message: dict) -> list[dict]:
+    """Extract A2UI protocol messages from an A2A response message."""
+
+    for part in message["parts"]:
+        if part.get("media_type") == A2UI_MEDIA_TYPE:
+            return part["data"]["messages"]
+
+    raise ValueError("A2A response does not contain an A2UI DataPart")
+
+
+def delete_result_surface() -> dict:
+    """Create the native A2UI message that removes the current result surface."""
+
+    return {
+        "version": "v1.0",
+        "deleteSurface": {
+            "surfaceId": RESULT_SURFACE_ID,
+        },
+    }
+
+def build_skill_selection(skills: list[dict]) -> list[dict]:
+    """Load the application-owned skill-selection presentation."""
+
+    return [
+        load_presentation(
+            HERE / "selection.json",
+            {"skills": skills},
+        )
+    ]
+
+
+# -----------------------------------------------------------------------------
+# HTTP server / handler
+# -----------------------------------------------------------------------------
+
+class BrowserServer(ThreadingHTTPServer):
+    """HTTP server holding the browser session's result-surface state."""
+
+    result_surface_created = False
+
+
 class Handler(SimpleHTTPRequestHandler):
- def __init__(self,*a,**k): super().__init__(*a,directory=str(DIST),**k)
- def do_GET(self):
-  parsed=urlparse(self.path)
-  if parsed.path=="/api/a2ui":
-   skill=parse_qs(parsed.query).get("skill",["inventory"])[0]; body=json.dumps({"messages":extract(asyncio.run(request_surface(HERE,skill)))}).encode(); self.send_response(200); self.send_header("Content-Type","application/json"); self.send_header("Content-Length",str(len(body))); self.end_headers(); self.wfile.write(body); return
-  super().do_GET()
-if __name__=="__main__": print("Browser validation: http://localhost:9130"); ThreadingHTTPServer(("0.0.0.0",9130),Handler).serve_forever()
+    """Serve the shared A2UI renderer and Example 30 API endpoints."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(
+            *args,
+            directory=str(DIST),
+            **kwargs,
+        )
+
+    def reply_json(self, payload: dict) -> None:
+        """Return a JSON response."""
+
+        body = json.dumps(payload).encode("utf-8")
+
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+
+        self.wfile.write(body)
+
+    def do_GET(self) -> None:
+        """Return the initial AgentCard-driven skill-selection surface."""
+
+        path = urlparse(self.path).path
+
+        if path != A2UI_SURFACE_PATH:
+            super().do_GET()
+            return
+
+        try:
+            skills = asyncio.run(discover_skills(HERE))
+            messages = build_skill_selection(skills)
+
+            # A browser load starts a new A2UI surface lifecycle. The initial
+            # response contains only the persistent skill-selection surface.
+            self.server.result_surface_created = False
+
+            self.reply_json({"messages": messages})
+
+        except Exception as exc:
+            print(
+                "A2UI initial surface failed: "
+                f"{type(exc).__name__}: {exc}"
+            )
+            self.send_error(502, explain=str(exc))
+
+    def do_POST(self) -> None:
+        """Process A2UI actions generated by the browser renderer."""
+
+        path = urlparse(self.path).path
+
+        if path != A2UI_ACTION_PATH:
+            self.send_error(404)
+            return
+
+        payload: dict | None = None
+
+        try:
+            content_length = int(
+                self.headers.get("Content-Length", "0")
+            )
+            payload = json.loads(
+                self.rfile.read(content_length)
+            )
+
+            action = payload["action"]
+
+            action_name = action.get("name")
+            skill_id = action.get("context", {}).get("skillId")
+
+            if action_name != SKILL_SELECT_ACTION or not skill_id:
+                raise ValueError(
+                    "expected skill.select action with skillId"
+                )
+
+            # AgentCard is authoritative. Do not accept a skill identifier
+            # merely because the browser supplied it.
+            skills = asyncio.run(discover_skills(HERE))
+            advertised_skill_ids = {
+                skill["id"] for skill in skills
+            }
+
+            if skill_id not in advertised_skill_ids:
+                raise ValueError(
+                    "skill is not advertised by AgentCard: "
+                    f"{skill_id}"
+                )
+
+            # Existing A2A client logic activates the discovered Nebula
+            # skill-selection extension and invokes the selected skill.
+            response = asyncio.run(
+                request_surface(HERE, skill_id)
+            )
+            messages = extract_a2ui_messages(response)
+
+            # Both skills render into one shared result slot. After the first
+            # successful selection, remove that surface before processing the
+            # next skill's createSurface message. The action dataModel is not
+            # an authoritative list of renderer surfaces, so lifecycle state is
+            # tracked by this browser server instead.
+            if self.server.result_surface_created:
+                messages.insert(0, delete_result_surface())
+
+            self.reply_json({"messages": messages})
+            self.server.result_surface_created = True
+
+        except Exception as exc:
+            print(
+                "A2UI action failed: "
+                f"{type(exc).__name__}: {exc}"
+            )
+            print(f"A2UI action payload: {payload!r}")
+
+            self.send_error(502, explain=str(exc))
+
+
+# -----------------------------------------------------------------------------
+# Main
+# -----------------------------------------------------------------------------
+
+def main() -> None:
+    """Run the Example 30 browser validation server."""
+
+    print(f"Browser validation: http://localhost:{PORT}")
+
+    server = BrowserServer(
+        (HOST, PORT),
+        Handler,
+    )
+    server.serve_forever()
+
+
+if __name__ == "__main__":
+    main()

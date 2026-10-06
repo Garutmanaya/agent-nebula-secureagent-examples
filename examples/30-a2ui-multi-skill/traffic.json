@@ -1,7 +1,7 @@
 {
   "version": "v1.0",
   "createSurface": {
-    "surfaceId": "traffic-surface",
+    "surfaceId": "selected-skill-surface",
     "catalogId": "https://agentnebula.ai/catalogs/a2ui/rich/v1/catalog.json",
     "sendDataModel": false,
     "components": [
@@ -10,7 +10,9 @@
         "component": "BarChart",
         "title": "Traffic by Region",
         "subtitle": "Current request volume",
-        "data": {"path": "/series"},
+        "data": {
+          "path": "/series"
+        },
         "unit": " requests",
         "orientation": "vertical"
       }

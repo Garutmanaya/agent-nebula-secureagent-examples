@@ -1,0 +1,61 @@
+{
+  "version": "v1.0",
+  "createSurface": {
+    "surfaceId": "skill-selection-surface",
+    "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+    "sendDataModel": true,
+    "components": [
+      {
+        "id": "root",
+        "component": "Column",
+        "children": ["title", "description", "skill_0", "skill_1"]
+      },
+      {
+        "id": "title",
+        "component": "Text",
+        "text": "Select a Skill",
+        "variant": "body"
+      },
+      {
+        "id": "description",
+        "component": "Text",
+        "text": "Choose an AgentCard skill to load its A2UI presentation."
+      },
+      {
+        "id": "skill_0",
+        "component": "Button",
+        "variant": "primary",
+        "child": "skill_0_label",
+        "action": {
+          "event": {
+            "name": "skill.select",
+            "context": {"skillId": {"path": "/skills/0/id"}}
+          }
+        }
+      },
+      {
+        "id": "skill_0_label",
+        "component": "Text",
+        "text": {"path": "/skills/0/name"}
+      },
+      {
+        "id": "skill_1",
+        "component": "Button",
+        "variant": "primary",
+        "child": "skill_1_label",
+        "action": {
+          "event": {
+            "name": "skill.select",
+            "context": {"skillId": {"path": "/skills/1/id"}}
+          }
+        }
+      },
+      {
+        "id": "skill_1_label",
+        "component": "Text",
+        "text": {"path": "/skills/1/name"}
+      }
+    ],
+    "dataModel": {"skills": []}
+  }
+}
