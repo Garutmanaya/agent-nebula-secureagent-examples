@@ -1,0 +1,23 @@
+{
+  "version": "v1.0",
+  "createSurface": {
+    "surfaceId": "task-report-surface",
+    "catalogId": "https://agentnebula.ai/catalogs/a2ui/rich/v1/catalog.json",
+    "sendDataModel": false,
+    "components": [
+      {
+        "id": "root",
+        "component": "DataTable",
+        "title": "Generated Service Report",
+        "columns": [
+          {"key": "service", "label": "Service", "align": "start"},
+          {"key": "region", "label": "Region", "align": "start"},
+          {"key": "status", "label": "Status", "align": "start"}
+        ],
+        "rows": {"path": "/rows"},
+        "emptyMessage": "No report data available"
+      }
+    ],
+    "dataModel": {}
+  }
+}

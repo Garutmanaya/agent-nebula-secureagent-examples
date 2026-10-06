@@ -1,0 +1,66 @@
+{
+  "version": "v1.0",
+  "createSurface": {
+    "surfaceId": "task-status-surface",
+    "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+    "sendDataModel": true,
+    "components": [
+      {
+        "id": "root",
+        "component": "Column",
+        "children": [
+          "title",
+          "task-id-label",
+          "task-id",
+          "state-label",
+          "state",
+          "artifact-label",
+          "artifact"
+        ]
+      },
+      {
+        "id": "title",
+        "component": "Text",
+        "text": "Native A2A Task",
+        "variant": "body"
+      },
+      {
+        "id": "task-id-label",
+        "component": "Text",
+        "text": "Task ID",
+        "variant": "caption"
+      },
+      {
+        "id": "task-id",
+        "component": "Text",
+        "text": {"path": "/taskId"},
+        "variant": "body"
+      },
+      {
+        "id": "state-label",
+        "component": "Text",
+        "text": "State",
+        "variant": "caption"
+      },
+      {
+        "id": "state",
+        "component": "Text",
+        "text": {"path": "/state"},
+        "variant": "body"
+      },
+      {
+        "id": "artifact-label",
+        "component": "Text",
+        "text": "Artifact",
+        "variant": "caption"
+      },
+      {
+        "id": "artifact",
+        "component": "Text",
+        "text": {"path": "/artifact"},
+        "variant": "body"
+      }
+    ],
+    "dataModel": {}
+  }
+}

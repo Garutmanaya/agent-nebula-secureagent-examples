@@ -337,5 +337,17 @@
       "browser": "browser.py"
     },
     "certificate_profile": "local"
+  },
+  "example-31": {
+    "directory": "examples/31-a2ui-tasks",
+    "name": "A2UI + Native A2A Tasks",
+    "description": "Native a2a-sdk Task artifact carrying an application-owned A2UI v1.0 presentation.",
+    "init_mode": "basic",
+    "processes": {
+      "server": "main.py",
+      "client": "client.py",
+      "browser": "browser.py"
+    },
+    "certificate_profile": "local"
   }
 }
