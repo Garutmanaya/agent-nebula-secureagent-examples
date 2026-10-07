@@ -83,6 +83,9 @@ def request_context(
         Struct(),
     )
     context = ClientCallContext(
+        # Required for skill-level security: the client security resolver uses
+        # this state value to select the advertised requirement for this skill.
+        state={"agent_nebula.a2a.skill_id": skill_id},
         service_parameters=ServiceParametersFactory.create(
             [with_a2a_extensions([a2ui_uri, dispatch_uri])]
         )

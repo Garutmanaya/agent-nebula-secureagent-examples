@@ -25,6 +25,7 @@ from examples.example_paths import config_path
 
 SERVER_URL = "https://aimlnode:9033/"
 A2UI_MIME_TYPE = "application/a2ui+json"
+SKILL_ID = "traffic-chart"
 
 
 # -----------------------------------------------------------------------------
@@ -54,6 +55,7 @@ def discover_a2ui_extension(card) -> tuple[str, list[str]]:
 
 def request_context(
     a2ui_uri: str,
+    skill_id: str,
     supported_catalogs: list[str],
 ) -> tuple[Struct, ClientCallContext]:
     """Activate A2UI and advertise catalogs discovered from the AgentCard."""
@@ -69,6 +71,9 @@ def request_context(
         Struct(),
     )
     context = ClientCallContext(
+        # Required for skill-level security: the client security resolver uses
+        # this state value to select the advertised requirement for this skill.
+        state={"agent_nebula.a2a.skill_id": skill_id},
         service_parameters=ServiceParametersFactory.create(
             [with_a2a_extensions([a2ui_uri])]
         )
@@ -97,7 +102,7 @@ async def request_surface(here: Path) -> dict:
     try:
         card = await agent.resolve_agent_card(SERVER_URL)
         a2ui_uri, supported_catalogs = discover_a2ui_extension(card)
-        metadata, context = request_context(a2ui_uri, supported_catalogs)
+        metadata, context = request_context(a2ui_uri, SKILL_ID, supported_catalogs)
 
         request = SendMessageRequest(
             message=new_text_message(

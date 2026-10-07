@@ -34,6 +34,9 @@ DISCOVERY_QUERY = "generate reports"
 def _skill_call(extension_uri: str, skill_id: str) -> tuple[Struct, ClientCallContext]:
     metadata = ParseDict({extension_uri: {"skillId": skill_id}}, Struct())
     call_context = ClientCallContext(
+        # Required for skill-level security: the client security resolver uses
+        # this state value to select the advertised requirement for this skill.
+        state={"agent_nebula.a2a.skill_id": skill_id},
         service_parameters=ServiceParametersFactory.create(
             [with_a2a_extensions([extension_uri])]
         )

@@ -22,7 +22,7 @@ from agent_nebula_secureagent import SecureAgent
 # -----------------------------------------------------------------------------
 
 HERE = Path(__file__).resolve().parent
-SERVER_URL = "https://localhost:9013/"
+SERVER_URL = "https://aimlnode:9013/"
 
 # -----------------------------------------------------------------------------
 # A2A request helpers
