@@ -1,7 +1,7 @@
 import React, {useEffect, useMemo, useRef, useState} from "react";
 import {ComponentContext, GenericBinder} from "@a2ui/web_core/rendering";
-import {RICH_COMPONENT_RENDERERS} from "@agent-nebula/a2ui-rich";
-import "@agent-nebula/a2ui-rich/styles.css";
+import {RICH_COMPONENT_RENDERERS} from "@agent-nebula-npm/a2ui-rich";
+import "@agent-nebula-npm/a2ui-rich/styles.css";
 import {createSurfaceProcessor, rendererDataModel} from "./surfaceState.js";
 
 

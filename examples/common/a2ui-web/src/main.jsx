@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
 import {createRoot} from "react-dom/client";
 import {A2UIRenderer} from "./Renderer.jsx";
-import "@agent-nebula/a2ui-rich/styles.css";
+import "@agent-nebula-npm/a2ui-rich/styles.css";
 import "./styles.css";
 
 function App() {

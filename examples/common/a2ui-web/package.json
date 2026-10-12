@@ -7,8 +7,8 @@
     "build": "vite build"
   },
   "dependencies": {
-    "@a2ui/web_core": "file:packages/a2ui-web_core-0.10.7.tgz",
-    "@agent-nebula/a2ui-rich": "file:packages/agent-nebula-a2ui-rich-1.0.0.tgz",
+    "@a2ui/web_core": "0.12.0",
+    "@agent-nebula-npm/a2ui-rich": "1.0.2",
     "@vitejs/plugin-react": "latest",
     "react": "latest",
     "react-dom": "latest",
