@@ -34,3 +34,7 @@ make run example-34 browser
 ```
 
 Open `http://localhost:9134` and validate both the Task/report path and the incremental streaming path.
+
+## Hosted-platform prerequisites
+
+Complete [Agent Nebula registration and discovery](../../docs/NEBULA_REGISTRATION.md) before this test. Review the [OAuth scopes and policy test matrix](../../docs/NEBULA_OAUTH_POLICY.md). Public Nginx + ngrok automation is [pending DOC-P4](../../docs/NEBULA_NGROK_NGINX.md).

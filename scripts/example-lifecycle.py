@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import os
 import shutil
 import socket
@@ -202,6 +203,20 @@ def required_environment_url(name: str) -> str:
     return value
 
 
+def public_agent_card_urls(text: str, example_id: str, config_name: str) -> str:
+    """Rewrite only advertised A2A URLs, never local listen addresses."""
+    domain = os.environ.get("NGROK_DOMAIN", "").strip()
+    if not domain:
+        return text
+    if not re.fullmatch(r"[A-Za-z0-9.-]+", domain):
+        raise SystemExit("NGROK_DOMAIN must be a hostname without scheme or path")
+    suffix = "" if config_name == "a2aserver.conf" else "-" + config_name.removesuffix(".conf").replace("-server", "")
+    prefix = f"https://{domain}/{example_id}{suffix}/"
+    # Match only the configured Agent Card and interface URL fields.
+    return re.sub(r'(?m)^(url\s*=\s*)"https://\{\{AGENT_HOSTNAME\}\}:\d+(/[^"\n]*)"',
+                  lambda match: match.group(1) + '"' + prefix + match.group(2).lstrip('/') + '"', text)
+
+
 def rewrite_config(text: str, p: dict[str, Path]) -> str:
     if "{{AGENT_HOSTNAME}}" in text:
         text = text.replace("{{AGENT_HOSTNAME}}", agent_hostname())
@@ -275,7 +290,10 @@ def init_one(example_id: str) -> None:
     source=REPO/item["directory"]/"config"
     if source.exists():
         for cfg in source.glob("*.conf"):
-            (p["config"]/cfg.name).write_text(rewrite_config(cfg.read_text(),p))
+            config_text = cfg.read_text()
+            if item["directory"].startswith("examples-nebula/") and cfg.name in {"a2aserver.conf", "provider-server.conf", "orchestrator-server.conf"}:
+                config_text = public_agent_card_urls(config_text, example_id, cfg.name)
+            (p["config"]/cfg.name).write_text(rewrite_config(config_text,p))
     mode=item.get("init_mode","basic")
     if certificate_profile == "nebula":
         required = ("server.crt", "client.crt", "trust-bundle.pem")

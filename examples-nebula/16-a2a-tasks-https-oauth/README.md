@@ -18,3 +18,7 @@ make clean example-16
 ```
 
 `example-16` uses `init_mode = oauth-nebula` and `certificate_profile = nebula`, exactly like the existing Agent Nebula OAuth examples. Initialization therefore expects approved Agent Nebula certificates, the onboarding API key, and the shared OAuth authentication/DPoP keys. Dynamic Client Registration persists the OAuth client ID under the Example 16 runtime `data/client-id` path.
+
+## Hosted-platform prerequisites
+
+Complete [Agent Nebula registration and discovery](../../docs/NEBULA_REGISTRATION.md) before this test. Review the [OAuth scopes and policy test matrix](../../docs/NEBULA_OAUTH_POLICY.md). Public Nginx + ngrok automation is [pending DOC-P4](../../docs/NEBULA_NGROK_NGINX.md).

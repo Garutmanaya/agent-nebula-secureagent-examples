@@ -55,7 +55,7 @@
     "certificate_profile": "local"
   },
   "example-06": {
-    "directory": "examples/06-nebula-registration-discovery",
+    "directory": "examples-nebula/06-nebula-registration-discovery",
     "name": "Agent Nebula Registration & Discovery",
     "description": "Agent Nebula provider registration, Registry discovery, and invocation through the discovered A2A Agent Card.",
     "init_mode": "nebula",
@@ -66,7 +66,7 @@
     "certificate_profile": "nebula"
   },
   "example-07": {
-    "directory": "examples/07-nebula-oauth",
+    "directory": "examples-nebula/07-nebula-oauth",
     "name": "Agent Nebula OAuth",
     "description": "OAuth-protected A2A invocation after Agent Nebula Registry discovery.",
     "init_mode": "oauth-nebula",
@@ -77,7 +77,7 @@
     "certificate_profile": "nebula"
   },
   "example-08": {
-    "directory": "examples/08-nebula-skill-oauth",
+    "directory": "examples-nebula/08-nebula-skill-oauth",
     "name": "Skill-Level OAuth",
     "description": "skill-level OAuth scopes and least-privilege authorization for multiple A2A skills.",
     "init_mode": "oauth-nebula",
@@ -88,7 +88,7 @@
     "certificate_profile": "nebula"
   },
   "example-09": {
-    "directory": "examples/09-nebula-agent-to-agent",
+    "directory": "examples-nebula/09-nebula-agent-to-agent",
     "name": "Agent-to-Agent",
     "description": "a dual-role SecureAgent serving A2A while discovering and invoking a downstream Agent Nebula provider.",
     "init_mode": "nebula",
@@ -166,7 +166,7 @@
     "certificate_profile": "local"
   },
   "example-16": {
-    "directory": "examples/16-a2a-tasks-https-oauth",
+    "directory": "examples-nebula/16-a2a-tasks-https-oauth",
     "name": "Native A2A Tasks + HTTPS + OAuth",
     "description": "Agent Nebula registration/discovery and OAuth-protected HTTPS native a2a-sdk Message and Task execution.",
     "init_mode": "oauth-nebula",
@@ -363,7 +363,7 @@
     "certificate_profile": "local"
   },
   "example-33": {
-    "directory": "examples/33-a2ui-security",
+    "directory": "examples-nebula/33-a2ui-security",
     "name": "A2UI + HTTPS + OAuth",
     "description": "Existing Agent Nebula HTTPS/OAuth security protecting native A2A carrying A2UI v1.0.",
     "init_mode": "oauth-nebula",
@@ -375,7 +375,7 @@
     "certificate_profile": "nebula"
   },
   "example-34": {
-    "directory": "examples/34-a2ui-combined",
+    "directory": "examples-nebula/34-a2ui-combined",
     "name": "A2UI Combined",
     "description": "HTTPS + OAuth + multi-skill native Task/streaming + A2UI without new protocol abstractions.",
     "init_mode": "oauth-nebula",

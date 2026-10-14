@@ -2,7 +2,7 @@
 -include .env
 export
 
-.PHONY: install lint list env-init pki-init nebula-pki-init secrets-init a2ui-init a2ui-web-build init run clean help server client browser provider orchestrator
+.PHONY: install lint list env-init pki-init nebula-pki-init secrets-init a2ui-init a2ui-web-build init run clean nebula-proxy-config help server client browser provider orchestrator
 
 EXAMPLE := $(word 2,$(MAKECMDGOALS))
 PROCESS := $(word 3,$(MAKECMDGOALS))
@@ -11,7 +11,7 @@ install:
 	uv sync --group dev
 
 lint:
-	uv run ruff check examples
+	uv run ruff check examples examples-nebula
 
 help:
 	@echo "Agent Nebula SecureAgent examples"
@@ -68,3 +68,9 @@ example-%:
 
 all server client browser provider orchestrator:
 	@:
+
+# Generate local Nginx routing for the hosted Agent Nebula integration examples.
+# NGROK_DOMAIN and the upstream TLS CA bundle must be explicitly configured.
+nebula-proxy-config:
+	@test -n "$(NGROK_DOMAIN)" || (echo "Set NGROK_DOMAIN to your assigned ngrok hostname" >&2; exit 2)
+	@python3 scripts/nebula-public-endpoint.py --domain "$(NGROK_DOMAIN)" --ca-file "$(NEBULA_PROXY_CA_FILE)" --upstream-tls-name "$(or $(NEBULA_PROXY_TLS_NAME),localhost)" --output "$(or $(NEBULA_PROXY_OUTPUT),$(AGENT_NEBULA_EXAMPLES_ROOT)/proxy)"

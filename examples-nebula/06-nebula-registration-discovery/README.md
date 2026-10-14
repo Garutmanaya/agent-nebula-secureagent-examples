@@ -179,3 +179,7 @@ Install onboarding API key
 ```
 
 Example 06 is successful only when certificate trust, authenticated registration, Registry discovery, and subsequent A2A skill invocation all work together.
+
+## Shared hosted-platform guides
+
+See [onboarding and registration](../../docs/NEBULA_REGISTRATION.md), [OAuth/policy tests](../../docs/NEBULA_OAUTH_POLICY.md), and [public endpoint prerequisites](../../docs/NEBULA_NGROK_NGINX.md).

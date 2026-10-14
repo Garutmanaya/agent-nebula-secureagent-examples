@@ -7,3 +7,7 @@ Agent Nebula separates **Registry authentication** from **A2A endpoint authoriza
 In a deployed Agent Nebula environment the OAuth service can consult the policy layer for authorization decisions. Policy remains external to business skill code; this example verifies the client/provider OAuth path, not a custom policy implementation.
 
 The client must discover the provider through Registry and successfully invoke all three OAuth-protected skills. See `../../docs/agent-nebula-integration.md`.
+
+## Hosted-platform prerequisites
+
+Complete [Agent Nebula registration and discovery](../../docs/NEBULA_REGISTRATION.md) before this test. Review the [OAuth scopes and policy test matrix](../../docs/NEBULA_OAUTH_POLICY.md). Public Nginx + ngrok automation is [pending DOC-P4](../../docs/NEBULA_NGROK_NGINX.md).
