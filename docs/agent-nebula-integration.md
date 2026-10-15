@@ -23,4 +23,4 @@ OAuth examples additionally generate local EC private keys for RFC 7523 client a
 
 ## Hosted developer onboarding
 
-Use the [registration walkthrough](NEBULA_REGISTRATION.md) and [OAuth/policy test guide](NEBULA_OAUTH_POLICY.md). The [ngrok/Nginx automation](NEBULA_NGROK_NGINX.md) is a separate DOC-P4 task.
+Use the [registration walkthrough](NEBULA_REGISTRATION.md) and [OAuth/policy test guide](NEBULA_OAUTH_POLICY.md). Configure the public endpoint using the [Nginx + ngrok setup guide](NEBULA_NGROK_NGINX.md).

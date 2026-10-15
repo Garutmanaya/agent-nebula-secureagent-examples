@@ -109,7 +109,7 @@ Run without Agent Nebula Registry registration, Nginx, or ngrok. Local TLS/secur
 
 ### Agent Nebula integrated — [`examples-nebula/`](examples-nebula/README.md)
 
-These examples use Agent Nebula registration/discovery and, where applicable, hosted OAuth and skill scopes. For hosted Explorer to reach a developer-run agent, its advertised Agent Card and A2A endpoints must be publicly reachable. The planned Nginx + ngrok setup is **DOC-P4**, not part of this documentation patch.
+These examples use Agent Nebula registration/discovery and, where applicable, hosted OAuth and skill scopes. For hosted Explorer to reach a developer-run agent, its advertised Agent Card and A2A endpoints must be publicly reachable. Configure the public endpoint using the [Nginx + ngrok setup guide](docs/NEBULA_NGROK_NGINX.md).
 
 | # | Example | Demonstrates |
 |---:|---|---|
@@ -127,7 +127,7 @@ These examples use Agent Nebula registration/discovery and, where applicable, ho
 
 The account ownership model is **Publisher → Provider → Agents**: a publisher account manages providers; a provider publishes and manages agent registrations. An Agent Card describes the agent's capabilities, endpoints, and advertised security requirements. Registry discovery and Explorer invocation require reachability and appropriate authorization; successful registration alone does not prove the agent is reachable.
 
-Start at [agentnebula.ai](https://agentnebula.ai) to create an account. Then follow the existing [Agent Nebula integration guide](docs/agent-nebula-integration.md) and [registration/discovery example](examples-nebula/06-nebula-registration-discovery/README.md) for provider onboarding, certificate enrollment, onboarding credentials, registration, discovery, and invocation. [Platform-integrated examples](examples-nebula/README.md) provide the ordered test path. The full hosted onboarding and Nginx/ngrok automation are DOC-P3 and DOC-P4 deliverables.
+Start at [agentnebula.ai](https://agentnebula.ai) to create an account. Then follow the existing [Agent Nebula integration guide](docs/agent-nebula-integration.md) and [registration/discovery example](examples-nebula/06-nebula-registration-discovery/README.md) for provider onboarding, certificate enrollment, onboarding credentials, registration, discovery, and invocation. [Platform-integrated examples](examples-nebula/README.md) provide the ordered test path. For hosted onboarding, see the [registration guide](docs/NEBULA_REGISTRATION.md), [OAuth and policy guide](docs/NEBULA_OAUTH_POLICY.md), and [Nginx + ngrok setup guide](docs/NEBULA_NGROK_NGINX.md).
 
 ## Developer documentation
 

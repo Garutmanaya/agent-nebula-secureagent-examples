@@ -8,4 +8,4 @@ Acceptance criterion: Registry discovery succeeds and all three skills succeed w
 
 ## Hosted-platform prerequisites
 
-Complete [Agent Nebula registration and discovery](../../docs/NEBULA_REGISTRATION.md) before this test. Review the [OAuth scopes and policy test matrix](../../docs/NEBULA_OAUTH_POLICY.md). Public Nginx + ngrok automation is [pending DOC-P4](../../docs/NEBULA_NGROK_NGINX.md).
+Complete [Agent Nebula registration and discovery](../../docs/NEBULA_REGISTRATION.md) before this test. Review the [OAuth scopes and policy test matrix](../../docs/NEBULA_OAUTH_POLICY.md). Configure the public endpoint using the [Nginx + ngrok setup guide](../../docs/NEBULA_NGROK_NGINX.md).

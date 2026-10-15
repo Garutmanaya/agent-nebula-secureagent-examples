@@ -26,7 +26,7 @@ These examples do **not** require Agent Nebula Registry registration. HTTPS and 
 | [33](../examples-nebula/33-a2ui-security/README.md) | OAuth-protected A2UI transport. |
 | [34](../examples-nebula/34-a2ui-combined/README.md) | Combined secured A2A/A2UI capabilities. |
 
-The Agent Card advertises OAuth metadata and per-skill `security_requirements` where configured. Scope enforcement must be verified with the configured authorization server and agent security layer; declaring a scope alone does not grant or enforce access. Hosted policy setup and explicit allow/deny tests require the dedicated onboarding guide and validation planned for DOC-P3.
+The Agent Card advertises OAuth metadata and per-skill `security_requirements` where configured. Scope enforcement must be verified with the configured authorization server and agent security layer; declaring a scope alone does not grant or enforce access. For hosted policy setup and allow/deny test expectations, see the [OAuth and policy guide](NEBULA_OAUTH_POLICY.md).
 
 ## Tunnel boundary
 

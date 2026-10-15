@@ -10,9 +10,9 @@ Follow [Example 06, steps 1–2](../examples-nebula/06-nebula-registration-disco
 
 ## 2. Prepare the public endpoint
 
-Hosted Registry and Explorer must be able to reach the agent's advertised Agent Card and A2A interface. A laptop-only `localhost` address is **not** reachable from OCI. The planned [Nginx + ngrok integration](NEBULA_NGROK_NGINX.md) is tracked in DOC-P4 and is **not automated by DOC-P3**. Do not register an Agent Card that advertises local-only URLs for hosted discovery/invocation.
+Hosted Registry and Explorer must be able to reach the agent's advertised Agent Card and A2A interface. A laptop-only `localhost` address is **not** reachable from OCI. Follow the [Nginx + ngrok setup guide](NEBULA_NGROK_NGINX.md) to generate proxy routes and expose local agent endpoints. Do not register an Agent Card that advertises local-only URLs for hosted discovery/invocation.
 
-The public HTTPS hostname, Agent Card URL, A2A interface URL, certificate SANs, and trusted endpoint identity must agree. The current initializer uses `AGENT_HOSTNAME` for the advertised host; DOC-P4 must verify how public path-based routing is represented before claiming the proxy works end to end.
+The public HTTPS hostname, Agent Card URL, A2A interface URL, certificate SANs, and trusted endpoint identity must agree. When `NGROK_DOMAIN` is configured, `make init` renders public Agent Card and A2A interface URLs. Verify the generated URLs and test both Agent Card retrieval and remote invocation before registering the agent.
 
 ## 3. Enroll provider certificates
 
@@ -61,4 +61,4 @@ Confirm that the registered Agent Card advertises a **publicly reachable** HTTPS
 | Agent not discoverable | Registration outcome, Agent Card metadata, liveness and discovery filters |
 | Discovered but invocation fails | Advertised A2A interface, transport, OAuth requirements, client trust |
 
-Continue with [OAuth and skill-scope testing](NEBULA_OAUTH_POLICY.md). Detailed proxy automation and verification belong to DOC-P4.
+Continue with [OAuth and skill-scope testing](NEBULA_OAUTH_POLICY.md). For public endpoint configuration and verification, see the [Nginx + ngrok setup guide](NEBULA_NGROK_NGINX.md).
