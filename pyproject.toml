@@ -2,6 +2,7 @@
 name = "agent-nebula-secureagent-examples"
 version = "0.1.0"
 description = "Runnable and forward-compatible examples for agent-nebula-secureagent"
+license = "Apache-2.0"
 requires-python = ">=3.12"
 dependencies = [
   "agent-nebula-secureagent[a2a-grpc]",
