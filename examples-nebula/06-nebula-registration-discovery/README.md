@@ -6,15 +6,39 @@ This is the first example that crosses the boundary from standalone A2A into the
 
 Unlike Examples 01–05, Example 06 does **not** create a self-signed/local-CA server certificate. The agent creates its private key and CSR locally. The CSR is submitted to Agent Nebula under the Provider account, and Agent Nebula supplies the signed certificate and trust bundle. The private key never leaves the agent host.
 
-## 1. Create the Publisher account
+## 1. Create and verify the Publisher account
 
-Open the Agent Nebula **Identity & Trust** page. Under **Create account**, enter the publisher email, publisher name, and password, then complete the OTP registration flow.
+Open [Agent Nebula](https://agentnebula.ai/) → **Identity & Trust** → **Create account**. Select **Email OTP** or **Phone OTP**, then enter the publisher email/phone, publisher name, and password. Select **Register and send OTP**. The screenshots below demonstrate email verification; phone verification is an alternative when available.
 
 ![Create Agent Nebula Publisher account](../../docs/images/06-nebula-registration-discovery/01-create-publisher.png)
 
-After account creation, sign in with the publisher account.
+Enter the six-digit registration code delivered to the selected channel and choose **Activate account**. The email verification screen indicates that the code expires in five minutes; use **Resend code** if necessary.
+
+![Activate publisher account with registration OTP](../../docs/images/06-nebula-registration-discovery/07-registration-otp.png)
+
+After activation, the interface confirms **Account activated. You can now sign in.**
+
+![Account activation confirmation](../../docs/images/06-nebula-registration-discovery/08-account-activated.png)
+
+## 1a. Sign in and complete required MFA
+
+Choose **Sign in** and enter the publisher email and password.
 
 ![Sign in to Agent Nebula](../../docs/images/06-nebula-registration-discovery/02-sign-in.png)
+
+The sign-in flow requires a separate six-digit verification code sent to the registered channel. Enter it under **Verify sign in** and select **Verify and sign in**. This is **not** the earlier registration OTP.
+
+![Verify sign-in OTP](../../docs/images/06-nebula-registration-discovery/09-sign-in-otp.png)
+
+On first access, Agent Nebula requires authenticator enrollment before opening the publisher workspace. Confirm the current password and select **Start setup**.
+
+![Begin required authenticator enrollment](../../docs/images/06-nebula-registration-discovery/10-authenticator-start.png)
+
+Open Google Authenticator or another compatible TOTP application. Scan the displayed QR code **or** enter its manual setup key into the app. Then enter the current six-digit authenticator code and select **Verify and enable**. The authenticator uses time-based codes that refresh every 30 seconds.
+
+![Connect authenticator and verify TOTP](../../docs/images/06-nebula-registration-discovery/11-authenticator-connect.png)
+
+The QR code and setup key are intentionally redacted in this documentation. **Never publish or share your own authenticator enrollment QR code, setup key, password, or OTP.** Registration verification, sign-in OTP, and authenticator TOTP are distinct steps. Complete any additional prompts presented by the application before continuing to Providers.
 
 ## 2. Create a Provider
 

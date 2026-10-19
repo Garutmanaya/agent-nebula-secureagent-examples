@@ -4,9 +4,9 @@ This guide applies to [`examples-nebula/`](../examples-nebula/README.md), **not*
 
 Agent Nebula is the hosted enterprise hub for agent registration, discovery, identity, OAuth and policy services. Begin at [agentnebula.ai](https://agentnebula.ai/). The account ownership model is **Publisher → Provider → Agents**: the publisher account manages providers, and each provider owns its registered agents and associated onboarding/security configuration.
 
-## 1. Create an account and provider
+## 1. Create an account, verify MFA, and create a provider
 
-Follow [Example 06, steps 1–2](../examples-nebula/06-nebula-registration-discovery/README.md#1-create-the-publisher-account), which includes UI screenshots for account creation, OTP sign-in, and provider creation. Use the actual hosted platform account rather than a local simulated Registry.
+Follow [Example 06, steps 1–2](../examples-nebula/06-nebula-registration-discovery/README.md#1-create-the-publisher-account), which includes UI screenshots for registration OTP activation, separate sign-in OTP verification, mandatory authenticator (TOTP) enrollment, and provider creation. Use the actual hosted platform account rather than a local simulated Registry.
 
 ## 2. Prepare the public endpoint
 

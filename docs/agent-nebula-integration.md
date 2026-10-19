@@ -23,4 +23,6 @@ OAuth examples additionally generate local EC private keys for RFC 7523 client a
 
 ## Hosted developer onboarding
 
+Before provider enrollment, create and activate the Publisher account using email/phone OTP, sign in using the separate verification code, and complete mandatory authenticator (TOTP) enrollment. See the [illustrated registration walkthrough](NEBULA_REGISTRATION.md).
+
 Use the [registration walkthrough](NEBULA_REGISTRATION.md) and [OAuth/policy test guide](NEBULA_OAUTH_POLICY.md). Configure the public endpoint using the [Nginx + ngrok setup guide](NEBULA_NGROK_NGINX.md).
