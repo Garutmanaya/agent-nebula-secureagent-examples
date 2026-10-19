@@ -1,0 +1,89 @@
+name: Publish SecureAgent Examples to PyPI
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install packaging tools
+        run: python -m pip install --upgrade build twine packaging
+      - name: Set tag version and latest stable SecureAgent 5.x
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import re
+          from pathlib import Path
+          from urllib.request import urlopen
+          from packaging.version import Version, InvalidVersion
+
+          tag = os.environ["RELEASE_TAG"]
+          if not re.fullmatch(r"v[0-9]+\.[0-9]+\.[0-9]+(?:a[0-9]+|b[0-9]+|rc[0-9]+|\.post[0-9]+)?", tag):
+              raise SystemExit(f"Invalid release tag: {tag}")
+          with urlopen("https://pypi.org/pypi/agent-nebula-secureagent/json", timeout=30) as response:
+              metadata = json.load(response)
+          releases = []
+          for raw, artifacts in metadata["releases"].items():
+              try:
+                  v = Version(raw)
+              except InvalidVersion:
+                  continue
+              if v.major == 5 and not v.is_prerelease and not v.is_devrelease and any(
+                  not item.get("yanked", False) for item in artifacts
+              ):
+                  releases.append(v)
+          if not releases:
+              raise SystemExit("No published stable SecureAgent 5.x release found")
+          dependency = str(max(releases))
+          path = Path("pyproject.toml")
+          content = path.read_text()
+          content, n_version = re.subn(
+              r'(?m)^version\s*=\s*"[^"]+"\s*$',
+              f'version = "{tag[1:]}"', content,
+          )
+          content, n_dependency = re.subn(
+              r'"agent-nebula-secureagent\[a2a-grpc\][^"]+"',
+              f'"agent-nebula-secureagent[a2a-grpc]=={dependency}"', content,
+          )
+          if (n_version, n_dependency) != (1, 1):
+              raise SystemExit("Expected one version and one SecureAgent dependency")
+          path.write_text(content)
+          print(f"Building examples {tag[1:]} with SecureAgent {dependency}")
+          PY
+      - name: Build wheel and sdist
+        run: python -m build
+      - name: Check metadata
+        run: python -m twine check dist/*
+      - uses: actions/upload-artifact@v4
+        with:
+          name: python-distributions
+          path: dist/*
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/agent-nebula-secureagent-examples
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: python-distributions
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1

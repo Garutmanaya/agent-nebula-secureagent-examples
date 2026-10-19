@@ -1,20 +1,39 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
 [project]
 name = "agent-nebula-secureagent-examples"
-version = "0.1.0"
-description = "Runnable and forward-compatible examples for agent-nebula-secureagent"
+version = "5.0.0"
+description = "Installable A2A and A2UI examples for Agent Nebula SecureAgent"
+readme = { file = "README.md", content-type = "text/markdown" }
 license = "Apache-2.0"
 requires-python = ">=3.12"
 dependencies = [
-  "agent-nebula-secureagent[a2a-grpc]",
+  "agent-nebula-secureagent[a2a-grpc]>=5.0.0,<6.0.0",
 ]
 
 [dependency-groups]
 dev = ["ruff>=0.12,<1.0"]
 
 
-[tool.uv.sources]
-agent-nebula-secureagent = { path = "../agent-nebula-secureagent", editable = true }
-
 [tool.ruff]
 line-length = 100
 target-version = "py312"
+
+[project.scripts]
+agent-nebula-examples = "agent_nebula_secureagent_examples.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["agent_nebula_secureagent_examples"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"examples" = "agent_nebula_secureagent_examples/assets/examples"
+"examples-nebula" = "agent_nebula_secureagent_examples/assets/examples-nebula"
+"scripts" = "agent_nebula_secureagent_examples/assets/scripts"
+"docs" = "agent_nebula_secureagent_examples/assets/docs"
+"examples.json" = "agent_nebula_secureagent_examples/assets/examples.json"
+"Makefile" = "agent_nebula_secureagent_examples/assets/Makefile"
+".env.example" = "agent_nebula_secureagent_examples/assets/.env.example"
+"README.md" = "agent_nebula_secureagent_examples/assets/README.md"
+"LICENSE" = "agent_nebula_secureagent_examples/assets/LICENSE"
